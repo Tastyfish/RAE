@@ -113,6 +113,16 @@ namespace RAE.Game
                 .Input(prompt).First();
         }
 
+        public IEnumerable<string> InputVerb()
+        {
+            return InputVerb("> ");
+        }
+        
+        public IEnumerable<string> InputVerb(string prompt)
+        {
+            return new VerbInput(this).Input(prompt);
+        }
+
         public static char Pause()
         {
             return Pause(true);
@@ -301,13 +311,12 @@ namespace RAE.Game
             List<string> newline = new List<string>();
             newline.Add(line[0]);
             string part = "";
-            Article a; HelperVerb h;
             for (int i = 1; i < line.Length; i++)
             {
                 string word = line[i].ToLower();
 
                 // ignore articles
-                if (!Enum.TryParse(word, true, out a) && !Enum.TryParse(word, true, out h))
+                if (!Enum.TryParse(word, true, out Article a) && !Enum.TryParse(word, true, out HelperVerb h))
                 {
                     part += (part.Length > 0 ? " " : "")
                         + word.Trim(new char[] { ' ', '\t', '.', ',', ':', ';', '\'', '"', '?', '!' });
@@ -558,10 +567,10 @@ namespace RAE.Game
                 }
             }
 
-            if(linesLeft != ConsoleHeight - 2)
+            if (linesLeft != ConsoleHeight - 2)
                 Pause();
             PrintLine("\nOne can move in compass directions by just typing the direction.");
-            
+
             for (int i = 0; i < Room.CompassDirections.Length; i++)
             {
                 PrintLine(" * "
@@ -569,10 +578,10 @@ namespace RAE.Game
                     + Colorize(Room.ShortCompassDirections[i], "yellow") + ")");
             }
         }
-        
+
         public void ParseLine()
         {
-            string[] fullLine = Input();
+            string[] fullLine = InputVerb().ToArray();
             string[] line = SanitizeLine(fullLine);
             //RAEGame.PrintLine("< " + line.Length);
             if (line.Length == 0 || (line.Length == 1 && line[0] == ""))

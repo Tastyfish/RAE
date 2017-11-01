@@ -24,11 +24,11 @@ namespace RAE.Game.IO
         protected IEnumerable<string> HandleNext()
         {
             if (IsTerminal)
-                return CurrentInputList;
+                return null;
 
             var input = CreateNextInput();
             if (input == null)
-                return CurrentInputList;
+                return null;
 
             GameConsole.PrintChar(' ');
             input.PreviousInput = this;
@@ -130,12 +130,12 @@ namespace RAE.Game.IO
 
                             // if non-terminal, we branch to the next one
                             var result = HandleNext();
-                            /*if (result != null)
+                            if (result != null)
                             {
                                 GameConsole.Window();
                                 GameConsole.PrintChar('\n');
                                 return result;
-                            }*/
+                            }
                             break;
                         }
 
@@ -204,7 +204,9 @@ namespace RAE.Game.IO
 
         public override IEnumerable<string> Input(string prompt)
         {
+            GameConsole.WindowInput();
             CurrentInput.Append(GameConsole.InputLine(prompt));
+            GameConsole.Window();
             return CurrentInputList;
         }
 
