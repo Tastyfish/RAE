@@ -13,9 +13,11 @@ namespace RAE.Game.IO
             Game = game;
         }
 
+        private static readonly string[] extraVerbs = new string[] { "quit", "save", "load", "restore", "new", "help" };
+
         public override IEnumerable<string> Input(string prompt)
         {
-            return HandleInput(prompt, Game.Verbs.Keys.Concat(Game.VerbShortcuts.Values).Distinct());
+            return HandleInput(prompt, Game.Verbs.Keys.Distinct().Concat(extraVerbs));
         }
 
         protected override ConsoleAdvancedInput CreateNextInput()

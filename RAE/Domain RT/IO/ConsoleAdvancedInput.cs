@@ -16,6 +16,8 @@ namespace RAE.Game.IO
         public abstract bool IsTerminal { get; }
         protected abstract ConsoleAdvancedInput CreateNextInput();
 
+        protected static readonly string[] BackspaceResult = new string[0];
+
         protected virtual void PrintPrompt(string prompt)
         {
             GameConsole.Print(prompt);
@@ -46,6 +48,12 @@ namespace RAE.Game.IO
                 else
                     return thisList;
             }
+        }
+
+        protected void Backspace()
+        {
+            CurrentInput.Remove(CurrentInput.Length - 1, 1);
+            GameConsole.Print("\b \b");
         }
     }
 
@@ -87,9 +95,9 @@ namespace RAE.Game.IO
                             // in this case, back up to the previous input if there is one
                             if (PreviousInput != null)
                             {
-                                GameConsole.Print("\b \b");
                                 GameConsole.Window();
-                                return null;
+                                GameConsole.Print("\b \b");
+                                return BackspaceResult;
                             }
                             break;
                         }
@@ -130,7 +138,16 @@ namespace RAE.Game.IO
 
                             // if non-terminal, we branch to the next one
                             var result = HandleNext();
-                            if (result != null)
+                            if(result == BackspaceResult)
+                            {
+                                // next backspaced back into here
+                                int bnum = GetNumFiltered(choices, CurrentInput.ToString());
+                                do
+                                {
+                                    Backspace();
+                                } while (bnum == GetNumFiltered(choices, CurrentInput.ToString()));
+                            }
+                            else if (result != null)
                             {
                                 GameConsole.Window();
                                 GameConsole.PrintChar('\n');
@@ -152,12 +169,6 @@ namespace RAE.Game.IO
                 }
             }
             return CurrentInputList;
-        }
-
-        protected void Backspace()
-        {
-            CurrentInput.Remove(CurrentInput.Length - 1, 1);
-            GameConsole.Print("\b \b");
         }
 
         protected void Error(string input)
@@ -204,9 +215,50 @@ namespace RAE.Game.IO
 
         public override IEnumerable<string> Input(string prompt)
         {
+            PrintPrompt(prompt);
+
+            //choices = choices.OrderBy(a => a.ToLower()).ToArray();
             GameConsole.WindowInput();
-            CurrentInput.Append(GameConsole.InputLine(prompt));
-            GameConsole.Window();
+            GameConsole.Print(GameConsole.CC(Color));
+            if (CurrentInput.Length > 0)
+            {
+                GameConsole.Print(CurrentInput.ToString());
+            }
+
+            ConsoleKeyInfo k = new ConsoleKeyInfo();
+            while (k.Key != ConsoleKey.Enter)
+            {
+                k = GameConsole.InputKey();
+                switch (k.Key)
+                {
+                    case ConsoleKey.Enter:
+                        GameConsole.Window();
+                        GameConsole.PrintChar('\n');
+                        break;
+                    case ConsoleKey.Backspace:
+                        // back up through characters until more choices come up
+                        if (CurrentInput.Length == 0)
+                        {
+                            // in this case, back up to the previous input if there is one
+                            if (PreviousInput != null)
+                            {
+                                GameConsole.Window();
+                                GameConsole.Print("\b \b");
+                                return BackspaceResult;
+                            }
+                        }
+                        else
+                        {
+                            Backspace();
+                        }
+                        break;
+                    default:
+                        // fill in a key at pos
+                        CurrentInput.Append(k.KeyChar);
+                        GameConsole.PrintChar(k.KeyChar);
+                        break;
+                }
+            }
             return CurrentInputList;
         }
 
