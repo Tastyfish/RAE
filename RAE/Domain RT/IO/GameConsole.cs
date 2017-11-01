@@ -443,9 +443,8 @@ namespace RAE.Game.IO
 
         public static string CC(string color)
         {
-            ConsoleColor cc;
 
-            if (!Enum.TryParse(color, true, out cc))
+            if (!Enum.TryParse(color, true, out ConsoleColor cc))
                 cc = ConsoleColor.Gray;
 
             return "\x1B" + ((int)cc).ToString("X0");

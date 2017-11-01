@@ -15,7 +15,7 @@ namespace RAE
 {
     class Program
     {
-        private static void printHelp()
+        private static void PrintHelp()
         {
             Console.WriteLine("RAE Compiler / Runtime v"
                     + Assembly.GetExecutingAssembly().GetName().Version);
@@ -82,7 +82,7 @@ namespace RAE
 
             if (files.Count == 0)
             {
-                printHelp();
+                PrintHelp();
                 return;
             }
 
@@ -135,8 +135,10 @@ namespace RAE
             if (failed)
                 Environment.Exit(2);
 
-            Compiler cpl = new Compiler(asmName);
-            cpl.Verbose = optionVerbose;
+            Compiler cpl = new Compiler(asmName)
+            {
+                Verbose = optionVerbose
+            };
             cpl.Compile(trees, files.ToArray(), optionSave);
         }
     }

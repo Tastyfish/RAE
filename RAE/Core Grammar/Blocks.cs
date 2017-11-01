@@ -1,12 +1,10 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Text;
-
-using Irony.Ast;
-using Irony.Parsing;
 using System.Reflection;
 using System.Reflection.Emit;
+
+using Irony.Parsing;
 
 using RAE.Game;
 
@@ -408,8 +406,7 @@ namespace RAE
 
             if (IsSubclassOf(b, typeof(Verbable)) || b == typeof(RAEGame))
             {
-                ILGenerator ibgbIl;
-                ci.GetInstance = AddInstanceProp(ci.Class, out ibgbIl, out ci.InstanceField);
+                ci.GetInstance = AddInstanceProp(ci.Class, out ILGenerator ibgbIl, out ci.InstanceField);
                 for (int i = 0; i < ci.InitConParams.Length; i++)
                 {
                     if (ci.InitConParams[i] is MethodInfo)

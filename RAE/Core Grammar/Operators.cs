@@ -1,13 +1,10 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Text;
-
-using Irony;
-using Irony.Parsing;
-
 using System.Reflection;
 using System.Reflection.Emit;
+
+using Irony.Parsing;
 
 using RAE.Game;
 
@@ -517,7 +514,7 @@ namespace RAE
 
             if (ci == null)
             {
-                DoError(node.ChildNodes[1], "Constructor " + t.Name + "(" + outputDebugParams(pars) + ") not found.");
+                DoError(node.ChildNodes[1], "Constructor " + t.Name + "(" + OutputDebugParams(pars) + ") not found.");
             }
 
             // call
@@ -566,7 +563,7 @@ namespace RAE
             return aType;
         }
 
-        string outputDebugParams(List<Type> t)
+        string OutputDebugParams(List<Type> t)
         {
             string val = "";
             for (int i = 0; i < t.Count; i++)
@@ -1071,8 +1068,7 @@ namespace RAE
                 {
                     string ename = AllocTempVariable(t);
                     StoreVariable(ename);
-                    Type et; // element type
-                    Type ct = DoArrayWriteObject(node.ChildNodes[0], out et);
+                    Type ct = DoArrayWriteObject(node.ChildNodes[0], out Type et);
                     LoadVariable(ename);
                     FreeTempVariable(ename);
                     ConvertType(t, et);
@@ -1082,12 +1078,10 @@ namespace RAE
                 {
                     string ename = AllocTempVariable(t);
                     StoreVariable(ename);
-                    string tname;
-                    Type ct = DoClassFieldWriteObject(node.ChildNodes[0], out tname);
+                    Type ct = DoClassFieldWriteObject(node.ChildNodes[0], out string tname);
                     LoadVariable(ename);
                     FreeTempVariable(ename);
-                    bool isStatic;
-                    rt = GetFieldType(ct, node.ChildNodes[0].ChildNodes[2].Token.Text, out isStatic);
+                    rt = GetFieldType(ct, node.ChildNodes[0].ChildNodes[2].Token.Text, out bool isStatic);
                     if (isStatic)
                         DoError(node.ChildNodes[0].ChildNodes[2], "Field in this context cannot be static.");
                     ConvertType(t, rt);
@@ -1174,8 +1168,7 @@ namespace RAE
             {
                 string ename = AllocTempVariable(rt);
                 StoreVariable(ename);
-                Type et; // element type
-                Type ct = DoArrayWriteObject(node.ChildNodes[0], out et);
+                Type ct = DoArrayWriteObject(node.ChildNodes[0], out Type et);
                 LoadVariable(ename);
                 FreeTempVariable(ename);
                 ConvertType(rt, et);
@@ -1185,12 +1178,10 @@ namespace RAE
             {
                 string ename = AllocTempVariable(rt);
                 StoreVariable(ename);
-                string tname;
-                Type ct = DoClassFieldWriteObject(node.ChildNodes[0], out tname);
+                Type ct = DoClassFieldWriteObject(node.ChildNodes[0], out string tname);
                 LoadVariable(ename);
                 FreeTempVariable(ename);
-                bool isStatic;
-                rt = GetFieldType(ct, node.ChildNodes[0].ChildNodes[2].Token.Text, out isStatic);
+                rt = GetFieldType(ct, node.ChildNodes[0].ChildNodes[2].Token.Text, out bool isStatic);
                 if (isStatic)
                     DoError(node.ChildNodes[0].ChildNodes[2], "Variables in this context cannot be static.");
                 DoClassFieldWriteFinish(node.ChildNodes[0], ct, tname);

@@ -308,8 +308,10 @@ namespace RAE.Game
             if (line.Length == 0)
                 return line;
 
-            List<string> newline = new List<string>();
-            newline.Add(line[0]);
+            List<string> newline = new List<string>
+            {
+                line[0]
+            };
             string part = "";
             for (int i = 1; i < line.Length; i++)
             {
@@ -939,9 +941,8 @@ namespace RAE.Game
             {
                 throw new InvalidDataException(propName + " not found in " + t.Name);
             }
-            if (mi is PropertyInfo)
+            if (mi is PropertyInfo pi)
             {
-                PropertyInfo pi = (PropertyInfo)mi;
                 Type pt = pi.PropertyType;
                 if (pt.IsPrimitive)
                 {
@@ -993,9 +994,8 @@ namespace RAE.Game
                     throw new ArgumentException(pi.ToString() + " was saved as wrong type.");
                 }
             }
-            else if (mi is FieldInfo)
+            else if (mi is FieldInfo fi)
             {
-                FieldInfo fi = (FieldInfo)mi;
                 Type pt = fi.FieldType;
                 if (pt.IsPrimitive)
                 {
@@ -1077,8 +1077,10 @@ namespace RAE.Game
             {
                 w.Write(new byte[] { 0x52, 0x41, 0x53, 0x56 }); // RASV
 
-                List<Verbable> items = new List<Verbable>();
-                items.Add(Player);
+                List<Verbable> items = new List<Verbable>
+                {
+                    Player
+                };
                 items.AddRange(Items.Values);
                 items.AddRange(NPCs.Values);
                 items.AddRange(Rooms.Values);
@@ -1178,7 +1180,7 @@ namespace RAE.Game
         internal void UpdateTitle()
         {
             Console.Title =
-                (Name != null ? Name : GetType().Name)
+                (Name ?? GetType().Name)
                 + (CurrentRoom != null ? " - "
                     + Capitalize((CurrentRoom.Article != Article.None ? Enum.GetName(typeof(Article), CurrentRoom.Article).ToLower() + " " : "")
                     + CurrentRoom.Name)
@@ -1268,9 +1270,11 @@ namespace RAE.Game
 
         public object Clone()
         {
-            State s = new State(Name, Article);
-            s.AKA = AKA.ToList();
-            s.Verbs = Verbs.ToDictionary(kv => kv.Key, kv => kv.Value);
+            State s = new State(Name, Article)
+            {
+                AKA = AKA.ToList(),
+                Verbs = Verbs.ToDictionary(kv => kv.Key, kv => kv.Value)
+            };
             return s;
         }
     }

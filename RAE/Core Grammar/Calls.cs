@@ -1,13 +1,9 @@
 ﻿using System;
-using System.Collections.Generic;
 using System.Linq;
-using System.Text;
-
-using Irony.Ast;
-using Irony.Parsing;
-
 using System.Reflection;
 using System.Reflection.Emit;
+
+using Irony.Parsing;
 
 using RAE.Game;
 

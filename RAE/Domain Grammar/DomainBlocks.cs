@@ -1,12 +1,10 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Text;
-
-using Irony.Ast;
-using Irony.Parsing;
 using System.Reflection;
 using System.Reflection.Emit;
+
+using Irony.Parsing;
 
 using RAE.Game;
 
@@ -345,10 +343,12 @@ namespace RAE
         void DoVerb(ParseTreeNode node)
         {
             string name = node.ChildNodes[1].ChildNodes[0].Token.Text;
-            var pars = new Dictionary<string, LocalInfo>();
-            pars.Add("target", new LocalInfo() { Index = 1, Type = typeof(Verbable) });
-            pars.Add("line", new LocalInfo() { Index = 2, Type = typeof(string[]) });
-            pars.Add("fullline", new LocalInfo() { Index = 3, Type = typeof(string[]) });
+            var pars = new Dictionary<string, LocalInfo>
+            {
+                { "target", new LocalInfo() { Index = 1, Type = typeof(Verbable) } },
+                { "line", new LocalInfo() { Index = 2, Type = typeof(string[]) } },
+                { "fullline", new LocalInfo() { Index = 3, Type = typeof(string[]) } }
+            };
 
             FunctionInfo fi = CreateHiddenFunction(pars, typeof(void));
             StatementInfo blkInfo = DoBlockBody(node.ChildNodes[2]);
@@ -361,9 +361,11 @@ namespace RAE
         {
             string name = node.ChildNodes[1].Token.Text;
 
-            Dictionary<string, LocalInfo> pars = new Dictionary<string, LocalInfo>();
-            pars.Add("line", new LocalInfo() { Index = 1, Type = typeof(string[]) });
-            pars.Add("tool", new LocalInfo() { Index = 2, Type = typeof(Item) });
+            Dictionary<string, LocalInfo> pars = new Dictionary<string, LocalInfo>
+            {
+                { "line", new LocalInfo() { Index = 1, Type = typeof(string[]) } },
+                { "tool", new LocalInfo() { Index = 2, Type = typeof(Item) } }
+            };
             FunctionInfo fi = CreateHiddenFunction(pars, typeof(void));
 
             StatementInfo blkInfo = DoBlockBody(node.ChildNodes[2]);
@@ -399,9 +401,11 @@ namespace RAE
 
         StatementInfo DoTick(ParseTreeNode node)
         {
-            Dictionary<string, LocalInfo> pars = new Dictionary<string, LocalInfo>();
-            pars.Add("$p1", new LocalInfo() { Index = 1, Type = typeof(string[]) });
-            pars.Add("$p2", new LocalInfo() { Index = 2, Type = typeof(Item) });
+            Dictionary<string, LocalInfo> pars = new Dictionary<string, LocalInfo>
+            {
+                { "$p1", new LocalInfo() { Index = 1, Type = typeof(string[]) } },
+                { "$p2", new LocalInfo() { Index = 2, Type = typeof(Item) } }
+            };
             FunctionInfo fi = CreateHiddenFunction(pars, typeof(void));
 
             StatementInfo blkInfo = DoBlockBody(node.ChildNodes[1]);

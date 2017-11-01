@@ -59,9 +59,10 @@ namespace RAE.Game
         {
             var d = new MultiItemDummy<P>(
                 (P)typeof(P).GetProperty("Instance")
-                .GetGetMethod().Invoke(null, null));
-
-            d.Amount = amount;
+                .GetGetMethod().Invoke(null, null))
+            {
+                Amount = amount
+            };
             return d;
         }
 

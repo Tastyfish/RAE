@@ -1,13 +1,10 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Text;
-
-using Irony.Ast;
-using Irony.Parsing;
-
 using System.Reflection;
 using System.Reflection.Emit;
+
+using Irony.Parsing;
 
 using RAE.Game;
 
@@ -169,8 +166,7 @@ namespace RAE
                         ClassStack.Pop();
                         break;
                 }
-                if (tr.Continuation != null)
-                    tr.Continuation(tr);
+                tr.Continuation?.Invoke(tr);
             }
 
             UnresolvedTypeReferences.RemoveAll(list.Contains);
@@ -184,9 +180,11 @@ namespace RAE
 
         DefVariable DoDefVariable(ParseTreeNode node)
         {
-            DefVariable dv = new DefVariable();
-            dv.Type = DoType(node.ChildNodes[0]);
-            dv.Name = (string)node.ChildNodes[1].Token.Value;
+            DefVariable dv = new DefVariable
+            {
+                Type = DoType(node.ChildNodes[0]),
+                Name = (string)node.ChildNodes[1].Token.Value
+            };
             return dv;
         }
  
@@ -279,9 +277,8 @@ namespace RAE
                 try
                 {
                     // get base field
-                    bool isStatic;
-                     // call this so we throw before loading this
-                    Type t = GetFieldType(CurrentClass.Class.BaseType, name, out isStatic);
+                    // call this so we throw before loading this
+                    Type t = GetFieldType(CurrentClass.Class.BaseType, name, out bool isStatic);
                     if (!isStatic)
                         CurrentFunction.IL.Emit(OpCodes.Ldarg_0);
                     LoadField(CurrentClass.Class.BaseType, name);
@@ -350,8 +347,7 @@ namespace RAE
             {
                 try
                 {
-                    bool isStatic;
-                    return GetFieldType(CurrentClass.Class.BaseType, name, out isStatic);
+                    return GetFieldType(CurrentClass.Class.BaseType, name, out bool isStatic);
                 }
                 catch
                 {
@@ -492,8 +488,7 @@ namespace RAE
             {
                 try
                 {
-                    bool isStatic;
-                    Type t = GetFieldType(CurrentClass.Class.BaseType, name, out isStatic);
+                    Type t = GetFieldType(CurrentClass.Class.BaseType, name, out bool isStatic);
                     if (!isStatic)
                     {
                         string tname = AllocTempVariable(t);
