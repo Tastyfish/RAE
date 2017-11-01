@@ -3,26 +3,55 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 
-namespace RAE.Game
+namespace RAE.Game.IO
 {
-    public abstract class ConsoleChoiceInput
+    public abstract class ConsoleAdvancedInput
     {
-        public abstract bool IsTerminal { get; }
         protected StringBuilder CurrentInput { get; } = new StringBuilder();
-        protected ConsoleChoiceInput PreviousInput { get; private set; }
+        protected ConsoleAdvancedInput PreviousInput { get; private set; }
 
-        public string Color = "gray";
+        public string Color { get; set; } = "gray";
+
+        public abstract IEnumerable<string> Input(string prompt);
+        public abstract bool IsTerminal { get; }
+        protected abstract ConsoleAdvancedInput CreateNextInput();
 
         protected virtual void PrintPrompt(string prompt)
         {
             GameConsole.Print(prompt);
         }
 
-        public abstract IEnumerable<string> Input(string prompt);
+        protected IEnumerable<string> HandleNext()
+        {
+            if (IsTerminal)
+                return CurrentInputList;
 
-        protected abstract ConsoleChoiceInput CreateNextInput();
+            var input = CreateNextInput();
+            if (input == null)
+                return CurrentInputList;
 
-        protected IEnumerable<string> HandleInput(string prompt, IList<string> choices)
+            GameConsole.PrintChar(' ');
+            input.PreviousInput = this;
+            return input.Input("");
+        }
+        
+        protected IEnumerable<string> CurrentInputList
+        {
+            get
+            {
+                var thisList = new string[] { CurrentInput.ToString() };
+
+                if (PreviousInput != null)
+                    return PreviousInput.CurrentInputList.Concat(thisList);
+                else
+                    return thisList;
+            }
+        }
+    }
+
+    public abstract class ConsoleChoiceInput : ConsoleAdvancedInput
+    {
+        protected IEnumerable<string> HandleInput(string prompt, IEnumerable<string> choices)
         {
             PrintPrompt(prompt);
 
@@ -45,6 +74,7 @@ namespace RAE.Game
                         {
                             // tell user they haven't filled something valid yet and force failure
                             Error(CurrentInput.ToString());
+                            k = new ConsoleKeyInfo();
                             break;
                         }
                         GameConsole.Window();
@@ -58,6 +88,7 @@ namespace RAE.Game
                             if (PreviousInput != null)
                             {
                                 GameConsole.Print("\b \b");
+                                GameConsole.Window();
                                 return null;
                             }
                             break;
@@ -98,16 +129,13 @@ namespace RAE.Game
                             GameConsole.Print(CurrentInput.ToString());
 
                             // if non-terminal, we branch to the next one
-                            if (IsTerminal)
-                                break;
-
-                            var input = CreateNextInput();
-                            if (input == null)
-                                break;
-
-                            GameConsole.PrintChar(' ');
-                            input.PreviousInput = this;
-                            Input("");
+                            var result = HandleNext();
+                            /*if (result != null)
+                            {
+                                GameConsole.Window();
+                                GameConsole.PrintChar('\n');
+                                return result;
+                            }*/
                             break;
                         }
 
@@ -126,19 +154,6 @@ namespace RAE.Game
             return CurrentInputList;
         }
 
-        private IEnumerable<string> CurrentInputList
-        {
-            get
-            {
-                var thisList = new string[] { CurrentInput.ToString() };
-
-                if (PreviousInput != null)
-                    return PreviousInput.CurrentInputList.Concat(thisList);
-                else
-                    return thisList;
-            }
-        }
-
         protected void Backspace()
         {
             CurrentInput.Remove(CurrentInput.Length - 1, 1);
@@ -155,7 +170,7 @@ namespace RAE.Game
             GameConsole.XY(input.Length, 0);
         }
 
-        private int GetNumFiltered(IList<string> choices, string input)
+        private int GetNumFiltered(IEnumerable<string> choices, string input)
         {
             return choices.Where(a => a.StartsWith(input, StringComparison.InvariantCultureIgnoreCase)).Count();
         }
@@ -163,27 +178,37 @@ namespace RAE.Game
 
     public class GenericConsoleChoiceInput : ConsoleChoiceInput
     {
-        public IList<string> Choices { get; }
+        public IEnumerable<string> Choices { get; }
 
-        public GenericConsoleChoiceInput(IList<string> choices)
+        public GenericConsoleChoiceInput(IEnumerable<string> choices)
         {
             Choices = choices;
         }
 
-        public override bool IsTerminal
-        {
-            get
-            {
-                return true;
-            }
-        }
+        public override bool IsTerminal { get; } = true;
 
         public override IEnumerable<string> Input(string prompt)
         {
             return HandleInput(prompt, Choices);
         }
 
-        protected override ConsoleChoiceInput CreateNextInput()
+        protected override ConsoleAdvancedInput CreateNextInput()
+        {
+            throw new NotImplementedException();
+        }
+    }
+    
+    public class ConsoleAlphaInput : ConsoleAdvancedInput
+    {
+        public override bool IsTerminal { get; } = true;
+
+        public override IEnumerable<string> Input(string prompt)
+        {
+            CurrentInput.Append(GameConsole.InputLine(prompt));
+            return CurrentInputList;
+        }
+
+        protected override ConsoleAdvancedInput CreateNextInput()
         {
             throw new NotImplementedException();
         }

@@ -45,8 +45,9 @@
     <Compile Include="Domain Grammar\DomainTerminals.cs" />
     <Compile Include="Domain RT\Engine\Game.cs" />
     <Compile Include="Core Grammar\Operators.cs" />
-    <Compile Include="Domain RT\IO\ConsoleChoiceInput.cs" />
+    <Compile Include="Domain RT\IO\ConsoleAdvancedInput.cs" />
     <Compile Include="Domain RT\IO\GameConsole.cs" />
+    <Compile Include="Domain RT\IO\GameInput.cs" />
     <Compile Include="Domain RT\Program.cs" />
     <Compile Include="Domain RT\Engine\GameExtensions.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
