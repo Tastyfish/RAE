@@ -5,7 +5,7 @@ using System.Text;
 using System.Runtime.InteropServices;
 using System.Threading;
 
-namespace RAE.Game
+namespace RAE.Game.IO
 {
     internal static class GameConsole
     {

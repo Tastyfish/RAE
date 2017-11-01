@@ -4,6 +4,7 @@ using System.Linq;
 using System.Reflection;
 using System.IO;
 using System.ComponentModel;
+using RAE.Game.IO;
 
 namespace RAE.Game
 {
@@ -585,6 +586,7 @@ namespace RAE.Game
 
             Verbable target;
             if (line.Length >= 2)
+            {
                 try
                 {
                     target = FindTarget(line[1]);
@@ -593,9 +595,10 @@ namespace RAE.Game
                 {
                     target = null;
                 }
+            }
             else if (CurrentRoom == null)
             {
-                RAEGame.PrintLine("You are lost.");
+                PrintLine("You are lost.");
                 return;
             }
             else
@@ -616,7 +619,7 @@ namespace RAE.Game
                     }
                     catch (Exception e)
                     {
-                        RAEGame.PrintLine("Could not save file:\n\t" + e.Message);
+                        PrintLine("Could not save file:\n\t" + e.Message);
                     }
                     break;
                 case "load":
@@ -634,7 +637,7 @@ namespace RAE.Game
                     }
                     break;
                 case "new":
-                    RAEGame.PrintLine("Start a new game?");
+                    PrintLine("Start a new game?");
                     if (Menu(new string[] { "New Game" }, "No") == 1)
                     {
                         NewGame();
@@ -662,7 +665,7 @@ namespace RAE.Game
 
                         if (target == null)
                         {
-                            RAEGame.PrintLine("You cannot see " + FabricateProperNoun(line[1]) + ".");
+                            PrintLine("You cannot see " + FabricateProperNoun(line[1]) + ".");
                             return;
                         }
 
@@ -692,7 +695,7 @@ namespace RAE.Game
                                 else
                                     name = null;
                             }
-                            RAEGame.PrintLine("You don't know how to " + line[0]
+                            PrintLine("You don't know how to " + line[0]
                                 + (line.Length > 1 ? " " + name : "") + ".");
                         }
                     }
