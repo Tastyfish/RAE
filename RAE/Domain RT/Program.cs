@@ -240,7 +240,7 @@ namespace RAE
                 AppDomain.CurrentDomain.DefineDynamicAssembly(an,
                 AssemblyBuilderAccess.RunAndSave);
             ConstructorInfo debc = typeof(DebuggableAttribute).GetConstructor(new Type[] { typeof(DebuggableAttribute.DebuggingModes) });
-            CustomAttributeBuilder debb = new CustomAttributeBuilder(debc, new object[] { 
+            CustomAttributeBuilder debb = new CustomAttributeBuilder(debc, new object[] {
                 DebuggableAttribute.DebuggingModes.DisableOptimizations
             });
             NewAssembly.SetCustomAttribute(debb);
@@ -359,25 +359,9 @@ namespace RAE
                         where t.IsSubclassOf(typeof(RAEGame))
                         select t).First();
 
-                MethodInfo mi = game.GetProperty("Instance").GetGetMethod();
-                mainIL.Emit(OpCodes.Call, mi);
-                // Player.AutoLookOnMovement = true;
-                mainIL.Emit(OpCodes.Dup);
-                mainIL.Emit(OpCodes.Call, game.GetProperty("Player").GetGetMethod());
-                mainIL.Emit(OpCodes.Ldc_I4_1);
-                mainIL.Emit(OpCodes.Call, typeof(Player).GetProperty("AutoLookOnMovement").GetSetMethod());
-                // Game.TryLook(Game.CurrentRoom, new string[0])
-                mainIL.Emit(OpCodes.Dup);
-                mainIL.Emit(OpCodes.Call, game.GetProperty("CurrentRoom").GetGetMethod());
-                mainIL.Emit(OpCodes.Ldc_I4_0);
-                mainIL.Emit(OpCodes.Newarr, typeof(string));
-                mainIL.Emit(OpCodes.Call, game.GetMethod("TryLook"));
-
-                Label l = mainIL.DefineLabel();
-                mainIL.MarkLabel(l);
-                mainIL.Emit(OpCodes.Call, mi);
-                mainIL.Emit(OpCodes.Call, game.GetMethod("ParseLine"));
-                mainIL.Emit(OpCodes.Br_S, l);
+                // RAEGame.Run<game>()
+                MethodInfo runMI = typeof(RAEGame).GetMethod("Run", BindingFlags.Static | BindingFlags.Public).MakeGenericMethod(game);
+                mainIL.Emit(OpCodes.Call, runMI);
             }
             catch
             {
@@ -399,13 +383,6 @@ namespace RAE
             }
 
             NewModule.GetMethod(".main").Invoke(null, null);
-
-            while (true)
-            {
-                RAEGame gi = (RAEGame)game.GetProperty("Instance")
-                    .GetGetMethod().Invoke(null, new object[0]);
-                gi.ParseLine();
-            }
         }
     }
 }

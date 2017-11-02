@@ -117,7 +117,7 @@ namespace RAE.Game
         {
             return InputVerb("> ");
         }
-        
+
         public IEnumerable<string> InputVerb(string prompt)
         {
             return new VerbInput(this).Input(prompt);
@@ -291,7 +291,7 @@ namespace RAE.Game
             get { return GameConsole.ConsoleHeight; }
         }
 
-        enum HelperVerb
+        internal enum HelperVerb
         {
             For,
             To,
@@ -715,6 +715,24 @@ namespace RAE.Game
 
             // tick all the verbables
             Tick();
+        }
+
+        public static void Run<GT>() where GT : RAEGame
+        {
+            GT game = (GT)typeof(GT).GetProperty("Instance").GetGetMethod()
+                .Invoke(null, null);
+
+            game.Player.AutoLookOnMovement = true;
+            game.TryLook(game.CurrentRoom, new string[0]);
+
+            while (true)
+            {
+                // in case the instance is wiped from a new/load
+                game = (GT)typeof(GT).GetProperty("Instance").GetGetMethod()
+                    .Invoke(null, null);
+
+                game.ParseLine();
+            }
         }
 
         /// <summary>
