@@ -74,5 +74,6 @@ item locket a "closed locket" {
     
     on look: "The locket looks like it could be "+colorize("opened", "yellow")+".";
 }
+```
 
 It's important note that `on` statements defined _after_ an explicit `state` definition will _only_ be placed in the default state, whereas ones before the first `state` will be in all following states. This way, a specific state can choose to not handle a verb at all.
