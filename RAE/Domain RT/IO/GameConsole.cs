@@ -7,15 +7,19 @@ using System.Threading;
 
 namespace RAE.Game.IO
 {
+    internal static class NativeMethods
+    {
+        [DllImport("kernel32.dll", SetLastError = true)]
+        public static extern IntPtr GetStdHandle(uint nStdHandle);
+        [DllImport("kernel32.dll", SetLastError = true)]
+        public static extern bool SetConsoleMode(IntPtr hConsoleHandle, uint dwMode);
+
+        public const uint ENABLE_PROCESSED_OUTPUT = 1;
+        public const uint STD_OUTPUT_HANDLE = 0xFFFFFFF5;
+    }
+
     internal static class GameConsole
     {
-        private const long STD_OUTPUT_HANDLE = -11;
-        [DllImport("kernel32.dll", SetLastError = true)]
-        private static extern IntPtr GetStdHandle(long nStdHandle);
-        private const long ENABLE_PROCESSED_OUTPUT = 1;
-        [DllImport("kernel32.dll", SetLastError = true)]
-        private static extern bool SetConsoleMode(IntPtr hConsoleHandle, long dwMode);
-
         public static void Init()
         {
             // init console
@@ -26,7 +30,7 @@ namespace RAE.Game.IO
             Console.SetWindowPosition(0, 0);
             Console.SetWindowSize(80, 25);
             // disable automatic scrolling
-            SetConsoleMode(GetStdHandle(STD_OUTPUT_HANDLE), ENABLE_PROCESSED_OUTPUT);
+            NativeMethods.SetConsoleMode(NativeMethods.GetStdHandle(NativeMethods.STD_OUTPUT_HANDLE), NativeMethods.ENABLE_PROCESSED_OUTPUT);
             winStack.Push(new WindowRect()
             {
                 Left = 0,
