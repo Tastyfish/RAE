@@ -1,4 +1,5 @@
-﻿using System.Linq;
+﻿using System;
+using System.Linq;
 using System.Collections.Generic;
 
 namespace RAE.Game.IO
@@ -17,12 +18,45 @@ namespace RAE.Game.IO
 
         public override IEnumerable<string> Input(string prompt)
         {
-            return HandleInput(prompt, Game.Verbs.Keys.Distinct().Concat(extraVerbs));
+            var cardinals = Game.CurrentRoom.Spots.Where(kv => !kv.Value.Removed).Select(kv => kv.Key).Intersect(Room.CompassDirections);
+
+            return HandleInput(prompt, Game.Verbs.Keys.Concat(Game.VerbShortcuts.Keys).Distinct().Concat(extraVerbs).Concat(cardinals));
         }
 
         protected override ConsoleAdvancedInput CreateNextInput()
         {
-            return new ConsoleAlphaInput();
+            return new ObjectInput(Game);
+        }
+    }
+
+    public class ObjectInput : ConsoleChoiceInput
+    {
+        public RAEGame Game { get; }
+        public override bool IsTerminal => false;
+
+        private static readonly string[] extraNouns =
+            Enum.GetNames(typeof(Article)).Select(n => n.ToLower())
+            .Concat(Enum.GetNames(typeof(RAEGame.HelperVerb)).Select(n => n.ToLower()))
+            .Concat(new string[] { "" })
+            .ToArray();
+
+        public ObjectInput(RAEGame game)
+        {
+            Game = game;
+        }
+
+        public override IEnumerable<string> Input(string prompt)
+        {
+            return HandleInput(prompt, Game
+                .GetAllTargets()
+                .Concat(extraNouns)
+                .Distinct())
+                .TakeWhile(s => s.Length != 0);
+        }
+
+        protected override ConsoleAdvancedInput CreateNextInput()
+        {
+            return new ObjectInput(Game);
         }
     }
 }

@@ -484,6 +484,32 @@ namespace RAE.Game
             }
         }
 
+        IEnumerable<string> GetTargetNames(Verbable v)
+        {
+            return v.AKA.Concat(new string[] { v.Name });
+        }
+
+        public IEnumerable<string> GetAllTargets()
+        {
+            List<string> targets = new List<string>()
+            {
+                CurrentRoom.Name
+            };
+            targets.AddRange(CurrentRoom.AKA);
+
+            targets.AddRange(CurrentRoom.Spots.Values.Where(s => !s.Removed).SelectMany(GetTargetNames));
+
+            var inv = Player.Contents.OfType<Item>();
+            targets.AddRange(inv.Where(i => i.InventoryVisible).SelectMany(i => i.Contents.SelectMany(GetTargetNames)));
+            targets.AddRange(inv.SelectMany(GetTargetNames));
+
+            targets.AddRange(CurrentRoom.Contents.SelectMany(GetTargetNames));
+
+            targets.AddRange(GetTargetNames(Player));
+
+            return targets;
+        }
+
         bool MatchesTarget(Verbable v, string name)
         {
             return v.Name.Equals(name, StringComparison.CurrentCultureIgnoreCase)

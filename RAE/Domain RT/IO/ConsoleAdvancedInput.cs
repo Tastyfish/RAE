@@ -117,6 +117,20 @@ namespace RAE.Game.IO
                         // invalid key
                         if (matches.Count() == 0)
                         {
+                            // check if we're spacing out of a shorter keyword
+                            if(k.KeyChar == ' ' && inputi.Length > 1)
+                            {
+                                string match = choices.SingleOrDefault(s => s == inputi.Substring(0, inputi.Length - 1));
+                                if(match != null)
+                                {
+                                    var result = HandleCompletion(choices, match);
+                                    if (result != null)
+                                        return result;
+                                    else
+                                        break;
+                                }
+                            }
+
                             Error(inputi);
                             Backspace();
                             break;
@@ -131,44 +145,58 @@ namespace RAE.Game.IO
                         if (matches.Count() == 1)
                         {
                             // done
-                            CurrentInput.Remove(0, CurrentInput.Length);
-                            CurrentInput.Append(matches.First());
-                            GameConsole.XY(0, 0);
-                            GameConsole.Print(CurrentInput.ToString());
-
-                            // if non-terminal, we branch to the next one
-                            var result = HandleNext();
-                            if(result == BackspaceResult)
-                            {
-                                // next backspaced back into here
-                                int bnum = GetNumFiltered(choices, CurrentInput.ToString());
-                                do
-                                {
-                                    Backspace();
-                                } while (bnum == GetNumFiltered(choices, CurrentInput.ToString()));
-                            }
-                            else if (result != null)
-                            {
-                                GameConsole.Window();
-                                GameConsole.PrintChar('\n');
+                            var result = HandleCompletion(choices, matches.First());
+                            if (result != null)
                                 return result;
-                            }
-                            break;
                         }
-
-                        // otherwise, fill chars until we get to unique fork
-                        int pos = CurrentInput.Length;
-                        do
+                        else
                         {
-                            added = matches.First().Substring(pos++, 1);
-                            CurrentInput.Append(added);
-                            GameConsole.Print(added);
-                        } while (matches.All(a => a.StartsWith(CurrentInput.ToString(), StringComparison.InvariantCultureIgnoreCase)));
-                        Backspace();
+                            // otherwise, fill chars until we get to unique fork
+                            int pos = CurrentInput.Length;
+                            do
+                            {
+                                string cmp = matches.First();
+                                if (pos < cmp.Length)
+                                    added = cmp.Substring(pos++, 1);
+                                else
+                                    added = " ";
+                                CurrentInput.Append(added);
+                                GameConsole.Print(added);
+                            } while (matches.All(a => a.StartsWith(CurrentInput.ToString(), StringComparison.InvariantCultureIgnoreCase)));
+                            Backspace();
+                        }
                         break;
                 }
             }
             return CurrentInputList;
+        }
+        
+        protected IEnumerable<string> HandleCompletion(IEnumerable<string> choices, string match)
+        {
+            CurrentInput.Remove(0, CurrentInput.Length);
+            CurrentInput.Append(match);
+            GameConsole.XY(0, 0);
+            GameConsole.Print(CurrentInput.ToString());
+
+            // if non-terminal, we branch to the next one
+            var result = HandleNext();
+            if (result == BackspaceResult || result?.Count() == 0)
+            {
+                // next backspaced back into here
+                int bnum = GetNumFiltered(choices, CurrentInput.ToString());
+                do
+                {
+                    Backspace();
+                } while (bnum == GetNumFiltered(choices, CurrentInput.ToString()));
+            }
+            else if (result != null)
+            {
+                GameConsole.Window();
+                GameConsole.PrintChar('\n');
+                return result;
+            }
+
+            return null;
         }
 
         protected void Error(string input)
