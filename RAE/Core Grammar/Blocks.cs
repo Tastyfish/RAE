@@ -135,7 +135,7 @@ namespace RAE
         {
             foreach (ClassInfo ci in cis.Values)
             {
-                if(Verbose)
+                if (Verbose)
                     Console.WriteLine("Closing " + ci.Class.Name);
                 ci.Class.CreateType();
 
@@ -401,7 +401,7 @@ namespace RAE
                 throw new CompileException("Class preload type corruption.");
 
             ci.Class.SetParent(b);
-            
+
             // inst var
 
             if (IsSubclassOf(b, typeof(Verbable)) || b == typeof(RAEGame))
@@ -497,7 +497,7 @@ namespace RAE
                 extraConParams = Type.EmptyTypes;
             if (initConParams == null)
                 initConParams = new MethodInfo[0];
-            
+
             ClassInfo ci = new ClassInfo()
             {
                 Class = tb,
@@ -811,11 +811,15 @@ namespace RAE
 
             // label to leave to for inner "returns" -- will only be used if there /is/ a return
             // see DoReturn()
-            TryBlockInfo blockInfo = new TryBlockInfo { ReturnLabel = CurrentFunction.IL.DefineLabel() };
+            TryBlockInfo blockInfo = new TryBlockInfo
+            {
+                ReturnLabel = CurrentFunction.IL.DefineLabel(),
+                ReturnVar = CurrentFunction.Method.ReturnType != typeof(void) ? AllocTempVariable(CurrentFunction.Method.ReturnType) : null
+            };
 
             TryScopes.Push(blockInfo);
             CurrentFunction.IL.BeginExceptionBlock();
-            
+
             StatementInfo tryInfo = DoBlockBody(node.ChildNodes[1]);
 
             MarkLinePosition(node.ChildNodes[3]);
@@ -839,9 +843,13 @@ namespace RAE
                 Label skipLabel = CurrentFunction.IL.DefineLabel();
                 CurrentFunction.IL.Emit(OpCodes.Br_S, skipLabel);
                 CurrentFunction.IL.MarkLabel(blockInfo.ReturnLabel);
+                if (blockInfo.ReturnVar != null)
+                    LoadVariable(blockInfo.ReturnVar);
                 CurrentFunction.IL.Emit(OpCodes.Ret);
                 CurrentFunction.IL.MarkLabel(skipLabel);
             }
+            if (blockInfo.ReturnVar != null)
+                FreeTempVariable(blockInfo.ReturnVar);
 
             return tryInfo & catchInfo;
         }

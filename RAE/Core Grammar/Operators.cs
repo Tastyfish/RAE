@@ -40,6 +40,8 @@ namespace RAE
             else
             {
                 var info = TryScopes.Peek();
+                if(info.ReturnVar != null)
+                    StoreVariable(info.ReturnVar);
                 CurrentFunction.IL.Emit(OpCodes.Leave, info.ReturnLabel);
                 info.LabelUsed = true;
             }

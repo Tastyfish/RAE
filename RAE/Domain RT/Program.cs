@@ -220,6 +220,7 @@ namespace RAE
             /// the label is where a return should leave to in a try/catch
             /// </summary>
             public Label ReturnLabel;
+            public string ReturnVar;
             public bool LabelUsed = false;
         }
 
