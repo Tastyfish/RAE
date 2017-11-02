@@ -751,7 +751,7 @@ namespace RAE
                             LoadConstant(pars.Length);
                             CurrentFunction.IL.Emit(OpCodes.Clt);
                             CurrentFunction.IL.Emit(OpCodes.Brfalse, loope);
-                            // a.Add(b[i]);
+                            // a.Remove(b[i]);
                             CurrentFunction.IL.Emit(OpCodes.Dup);
                             LoadVariable(bvar);
                             LoadVariable(ivar);
@@ -778,6 +778,7 @@ namespace RAE
                             // {a take b} -> {a.Remove(b)}
 
                             CurrentFunction.IL.Emit(OpCodes.Callvirt, mi);
+                            CurrentFunction.IL.Emit(OpCodes.Pop);
                         }
                         return typeof(void);
                     }
