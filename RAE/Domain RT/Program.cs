@@ -271,6 +271,7 @@ namespace RAE
             System.Environment.Exit(1);
         }
 
+        [Serializable]
         class CompileException : Exception
         {
             public readonly ParseTreeNode Location;
