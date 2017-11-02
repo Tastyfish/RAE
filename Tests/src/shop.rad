@@ -1,0 +1,204 @@
+room shop a "convenience store" {
+	aka {"store", "shop"};
+	public int unpayedAmt = 0;
+	
+	on enter {
+		// shouldn't even happen, but to be safe
+		if game.shopClosed {
+			west + " is locked.";
+			goto street;
+		}
+	}
+	
+	on look {
+		describe();
+		"One of the flourescent lights is flickering.";
+	}
+	
+	fn bool checkBelief() {
+		bool b = roll(3) == 0;
+		if b {
+			"You believe "+north+".";
+			game.fleeHome();
+		}
+		return b;
+	}
+	
+	fn void shootout() {
+		"You pull out "+gun+" and point it torward "+north+".";
+		print(north.toTheString()+": ");
+		TypeOutLine("Oooohhhhh myyyyyyy Goooooooooooood!!!!", 100);
+		pause();
+		if roll(6) == 0 {
+			// failing pulling this out, you shoot cashier immediately
+			"You accidentally shoot "+north+" immediately.";
+			game.becomeMurderer();
+			game.shopClosed = true;
+			game.fleeHome();
+			return;
+		} else {
+			north+" is frightened.";
+			int battleTick = 0;
+			int cashierHas = 500;
+			menu {
+				game.tick();
+				if this has patrolman1 {
+					patrolman1: colorize("Hold right there!", "yellow");
+					game.wanted = true;
+				}
+				
+				case "[Shoot the cashier and take money]":
+					TypeOutLine("Nooooooooooooooooooooooooooooooooooooooooooooooo!", 200);
+					if roll(6) == 1 {
+						"You shoot "+north+".";
+						game.becomeMurderer();
+						"You take $"+cashierHas+".";
+						game.shopClosed = true;
+						game.fleeHome();
+						return;
+					} else {
+						"You miss." then "You miss, again. Wow.";
+					}
+					battleTick++;
+				case "Give me the money!":
+					switch roll(4) {
+						case 0:
+							north: "Hm?";
+						case 1:
+							north: "No.";
+						case 2:
+							north: "'K.";
+							int amt = 50;
+							if cashierHas < amt:
+								cashierHas = amt;
+							north+" gives you $"+amt+".";
+							wallet.addCash(amt);
+							cashierHas -= amt;
+							if checkBelief():
+								return;
+						case 3:
+							north: "Yeah, sure..";
+							north+" gives you $"+cashierHas+".";
+							wallet.addCash(cashierHas);
+							cashierHas = 0;
+							game.shopClosed = true;
+							if checkBelief():
+								return;
+					}
+					battleTick++;
+				case "[Wait to see if conditions improve.]":
+					"You stand there like an idiot.";
+					battleTick++;
+				case "[Flee]":
+					"You flee home.";
+					goto house;
+					return;
+			}
+		}
+	}
+	
+	spot west the "exit" {
+		aka {"door", "doorway"};
+		on enter {
+			if shop.unpayedAmt > 0 {
+				north+": Hey! I know you have chips there!";
+				"He confiscates all of the chips from you.";
+				"";
+				chips.addAmount(-chips.amount());
+			}
+			goto street;
+		}
+		on look {
+			describe();
+			"The outside world is bright and saturated compared to this danky shop.";
+		}
+		on examine:
+			"It's a push door.";
+		on open:
+			"The door's already open, as is the store!";
+		on close:
+			"You don't own the store!";
+	}
+	spot south a "shelf of chips" {
+		aka {"shelf", "chips"};
+		
+		on look {
+			describe();
+			"The shelf is mainly Tater(R) Ruffle Chips.";
+		}
+		on use:
+			do pickup;
+		on enter:
+			do pickup;
+		on pickup {
+			chips.addAmount(1);
+			shop.unpayedAmt++;
+			"You pick up "+bold("a bag of chips.");
+		}
+		on drop {
+			if shop.unpayedAmt == 0 {
+				"You don't have any unpayed for bags yet!";
+				return;
+			}
+			"You put "+bold("a bag back down.");
+			chips.addAmount(-1);
+			shop.unpayedAmt--;
+		}
+		on shoot:
+			"That would almost certainly make them difficult to eat.";
+	}
+	spot north the "cashier" {
+		aka "clerk";
+		
+		on look {
+			"He is standing in front of a counter with a cash register on top.";
+		}
+		on examine:
+			"The cashier is on a cellphone, half paying attention to you.";
+		on use:
+			do talk;
+		on enter:
+			do talk;
+		on shoot:
+			shop.shootout();
+		
+		on talk {
+			if shop.unpayedAmt <= 0 {
+				this: "Do you need help picking something?";
+				this: "The ruffle chips are great.";
+				return;
+			}
+			this: "Looks like you picked " + shop.unpayedAmt + " bags of Tater(R) Ruffle Chips.";
+			this: "That'll be $" + shop.unpayedAmt * 2 + ".";
+			
+			bool canPay = wallet.cash() >= shop.unpayedAmt * 2;
+			
+			menu {
+				case "Pay $" + (shop.unpayedAmt * 2) if canPay:
+					wallet.addCash(-shop.unpayedAmt * 2);
+					shop.unpayedAmt = 0;
+					this: "Thanks. Have a nice day.";
+					return;
+				case "[Punch "+this+" in the face.]" if !canPay:
+					Bold("A police officer")+" happens to walk in at that exact moment.";
+					wait(1000);
+					"You are immediately arrested.";
+					pause();
+					game.gameOver("Hope you enjoy jail.");
+					return;
+				escape "Goodbye":
+					this: "Huh?";
+			}
+		}
+		
+		on give {
+			if tool == chips || tool == south {
+				do talk;
+			} else if tool == idcard {
+				this: "We don't sell booze here.";
+			} else {
+				this: "I don't want that, man.";
+			}
+		}
+	}
+}

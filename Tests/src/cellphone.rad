@@ -1,0 +1,91 @@
+item cellphone a "cellphone" {
+	aka {"phone", "cell"};
+	
+	public string note1 = "";
+	public string note2 = "";
+	public string note3 = "";
+	
+	on look {
+		describe();
+		"It's a fairly old cellphone, which little in terms of bells and whistles.";
+	}
+	
+	on examine:
+		do use;
+		
+	fn bool DoRewards() {
+		TypeOutLine(cc("yellow")+"1-800-524-2331", 300);
+		
+		tatercorp: CC("yellow")+"Welcome to Tater(R) Rewards.";
+		menu {
+			tatercorp: "\t"+CC("yellow")+"Ask about our new Popbux contest! How may we help you?";
+			
+			case "Collect 100 bags reward":
+				tatercorp: "You have "+bold("100 proofs of purchase")+", right?";
+				int amt = proofs.amount();
+				if amt >= 100 {
+					player: "Yes";
+					tatercorp: "Congratulations!";
+					goto reward;
+					return true;
+				} else {
+					player: "uh";
+					if amt == 0 {
+						tatercorp: "Sorry, our ProofTrax(R) system shows you don't have any!";
+					} else {
+						tatercorp: "Sorry, our ProofTrax(R) system shows you only have "+proofs.amount()+".";
+					}
+				}
+			case "Ask about Popbux contest":
+				tatercorp: CC("yellow")+"Collect 30 Popbux(R) from";
+				tatercorp: "\t"+CC("yellow")+"the bottoms of TaterPop(R) cans in participating stores.";
+			escape "Hangup":
+		}
+		tatercorp: "Have a nice day!";
+		return false;
+	}
+	
+	on use {
+		if !(has this) {
+			"You need to be holding " + this + " to use it!";
+			return;
+		}
+		menu {
+			//"                        ";
+			CC("cyan")+"V |Ii.        Saunter(R)";
+			
+			case "Contacts":
+				if game.hasAdNumber {
+					CC("cyan")+"V NO SIGNAL   Saunter(R)";
+					"  CONTACTS";
+					menu {
+						case "Tater(R) Rewards":
+							if DoRewards():
+								return; // teleporting
+						escape "Back":
+							"Unknown contact.";
+					}
+				} else {
+					"You have no friends.";
+				}
+			case "Calendar":
+				"You have no appointments.";
+			case "Notes":
+				"Notes";
+				string n = inputLine("Line 1 (Leave blank to keep line)" + note1 + ": ");
+				if n != "":
+					note1 = n;
+				n = inputLine("Line 2 (Leave blank to keep line)" + note2 + ": ");
+				if n != "":
+					note2 = n;
+				n = inputLine("Line 3 (Leave blank to keep line)" + note3 + ": ");
+				if n != "":
+					note3 = n;
+			escape "Put Away":
+				"Goodbye!";
+		}
+	}
+}
+
+// dummy item for dialog
+item tatercorp "Tater(R)";

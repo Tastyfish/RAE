@@ -1,0 +1,38 @@
+using System.DateTime;
+
+game KeyExample {
+	give {key, watch};
+	goto closet;
+}
+
+item key a "gold key": aka "key";
+item watch a "cheap watch" {
+	aka {"watch", "clock", "timepiece", "timejig"};
+	on look {
+		describe();
+		"That sure is a piece of shit!";
+	}
+	on examine:
+		"The hands read " + DateTime..Now.ToShortTimeString() + ".";
+}
+
+verb unlock {
+	if !TryVerb(target, "unlock", line):
+		"You're not sure how to unlock "+target+".";
+}
+
+room closet the "closet" {
+	spot east the "door out of here" {
+		aka {"door", "closet door"};
+		
+		on unlock: switch tool {
+			case null:
+				"The door's locked.";
+			case key:
+				"You win the game.";
+				quit();
+			default:
+				"You smash " + tool.ToTheString() + " against the door but nothing happens.";
+		}
+	}
+}

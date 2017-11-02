@@ -1,0 +1,13 @@
+game zz {
+	goto r;
+}
+
+room n "other room" {
+}
+
+room r "r" {
+	spot#door(n) north a "door to the other room";
+}
+
+verb enter: TryEnter(target, line);
+verb look: TryLook(target, line);

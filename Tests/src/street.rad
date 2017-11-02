@@ -1,0 +1,159 @@
+room street the "main street in town" {
+	aka {"street", "road", "main street"};
+	
+	on enter {
+		if game.wanted && roll(4) == 0 {
+			colorize("You hear sirens!", "yellow");
+		}
+	}
+	
+	on look {
+		describe();
+		"There is "+Bold("some dry brush")+" on the side of the street.";
+		"There is no sidewalk, so you better watch your step!";
+		"Luckily, there is not much traffic today." then "Same ol', same ol'.";
+	}
+	on examine {
+		this+" is paved with old asphalt; potholes crowd the path.";
+		"Shrubbery borders the road on both sides, trimmed by a concrete curb.";
+	}
+	on open:
+		"The street is already open to the public.";
+	on close:
+		"You're not a traffic cop, silly!";
+	on exit:
+		"You're already outside on the street!";
+	
+	spot west the "apartment" {
+		aka {"house", "home", "flat", "door"};
+		
+		on examine {
+			"The door was left unlocked.";
+			"The address is 1012 Main St.";
+		}
+		state opened {
+			on enter:
+				goto house;
+			on look {
+				describe();
+				"Your apartment is a 2-story stucco building.";
+				Bold("The door")+" is open.";
+			}
+			on open:
+				Bold("The door")+"'s already open.";
+			on close {
+				"You close "+Bold("the door")+".";
+				to closed;
+			}
+		}
+		state closed {
+			on enter:
+				Bold("The door")+"'s closed.";
+			on look {
+				describe(); 
+				"Your apartment is a 2-story stucco building.";
+				Bold("The door")+" is closed.";
+			}
+			on open {
+				"You open "+Bold("the door")+".";
+				to opened;
+			}
+			on close:
+				Bold("The door")+"'s already closed.";
+		}
+		
+		to opened;
+	}
+	spot east the "convenience store" {
+		aka {"store", "shop"};
+		
+		on look {
+			describe();
+			"This convenience store is a bit shabby;";
+			"the paint is peeling and one of the windows is boarded up.";
+			Bold("The sign")+" on the door says \"Open\".";
+		}
+		on examine:
+			"The address is 1013 Main St.";
+		on enter:
+			if !game.shopClosed:
+				goto shop;
+			else
+				east+" is closed.";
+		on open {
+			if !game.shopClosed:
+				"The door's already open, as is the store!";
+			else
+				"You don't own the store!";
+		}
+		on close:
+			"You don't own the store!";
+	}
+	spot south the "gun store" {
+		aka "gun shop";
+		
+		on look {
+			describe();
+			"This gun store is an old brick building, probably from the 50's.";
+			"The windows are barred and the door is steel.";
+		}
+		
+		on examine:
+			"The address is 1011 Main St.";
+		on enter:
+			goto gunshop;
+		on open:
+			"The door's already open, as is the store!";
+		on close:
+			"You don't own the store!";
+	}
+	spot brush some "dry brush" {
+		aka {"brush", "bush", "bushes", "side", "side of street"};
+		hidden = true;
+		
+		on examine {
+			"It's pretty dead looking!";
+			"However, through the bushes, you can spot "+warehouse+".";
+			southeast.hidden = false;
+		}
+	}
+	spot sign an "open sign" {
+		aka {"sign", "shop sign", "store sign"};
+		hidden = true;
+		
+		on look {
+			if !game.shopClosed:
+				CC("green")+"Open";
+			else
+				CC("red")+"Closed";
+		}
+		
+		on examine {
+			if !game.shopClosed:
+				"It says "+CC("green")+"Open"+CC("gray")+". What more do you want?";
+			else
+				"It says "+CC("red")+"Closed"+CC("gray")+". Oh well.";
+		}
+	}
+	spot north the "public park" {
+		aka "park";
+		
+		on examine:
+			"There are a bunch of trees.";
+		on enter:
+			goto park;
+	}
+	spot southeast a "shady warehouse" {
+		aka {"warehouse", "sketchy warehouse", "black market"};
+		hidden = true;
+		
+		on enter: goto warehouse;
+		on examine: "You're not so sure about it, it seems "+Bold("dark and sketchy")+".";
+	}
+	spot northwest the "police station" {
+		aka {"jail", "prison"};
+		
+		on enter: "It seems to closed to the public.";
+		on examine: "A large, grey, daunting building.";
+	}
+}

@@ -1,0 +1,103 @@
+room tutorial the "tutorial" {
+	on look {
+		if !DescribedBefore {
+			"Interacting with this world is done primarily via a command line, appearing as";
+			"> ";
+			"This input mode requires you to freely input commands, as part of the game is discovery.";
+			"Try to "+colorize("look at the bird", "cyan")+" now.";
+		}
+		describe();
+	}
+	
+	spot bird the "bird" {
+		aka {"bird", "parrot"};
+		
+		private bool greeted = false;
+		
+		fn void squawk() {
+			this: Colorize("Squawk!", "magenta");
+		}
+		
+		on look {
+			"You realize that it is clearly a parrot.";
+			"Perhaps you could talk to it?";
+			to parrot;
+			squawk();
+		}
+		
+		state parrot {
+			name = "parrot";
+			
+			on talk {
+				sayTypingRate = 75;
+				this: "Polly wants a cracker!";
+				sayTypingRate = 25;
+				squawk();
+				
+				menu {
+					case "HELLO BIRD!" if !greeted:
+						this: "Hello!";
+						squawk();
+						greeted = true;
+					case "Here's a cracker!!!":
+						this: "What cracker?";
+						squawk();
+						if !(has tut_cracker) {
+							"You may want to give it a cracker.";
+							"In order to view your "+bold("inventory")+", you can type inventory or just "+bold("i")+".";
+							give tut_cracker;
+						}
+						return;
+					escape "C'ya":
+						squawk();
+				}
+			}
+			
+			on give {
+				if tool == tut_cracker {
+					take tut_cracker;
+					this: "Thank you!";
+					squawk();
+					this: "Time to find a statue!";
+					this+" leaves through the window.";
+					removed = true;
+					window.removed = false;
+					"Perhaps you could try to follow the parrot out.";
+				} else {
+					this: "What an odd cracker!";
+					squawk();
+				}
+			}
+		}
+	}
+	
+	spot window an "open window" {
+		aka {"window", "cracked window", "escape", "opened window"};
+		removed = true;
+		
+		on look:
+			"The window is cracked open.";
+		
+		on examine:
+			"There is a cracker jammed in the lock mechanism.";
+		
+		on enter {
+			"You try to climb through the window.";
+			typeoutline("Ooof!", 50);
+			"Wow, this drop is much higher than you assumed!";
+			typeoutLine(colorize("Aaaaaaaaaaaaaaaaah!", "red"), 100);
+			"";
+			goto opening;
+		}
+		
+		on exit:
+			do enter;
+	}
+}
+
+item tut_cracker a "cracker" {
+	on look {
+		describe();
+		"I'm sure a parrot would love it if you were to "+colorize("give", "cyan")+" this to it.";
+	}
+}

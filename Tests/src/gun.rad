@@ -1,0 +1,141 @@
+item gun a "7mm pistol" {
+	aka {"pistol", "gun", "gat"};
+	public int ammoInClip = 0;
+	public int clipSize = 7;
+	public int ammoReserve = 0;
+	
+	fn void setAmmoReserve(int value) {
+		if value > 0 {
+			if !(has ammo):
+				give ammo;
+			
+			if value == 1:
+				ammo to default;
+			else
+				ammo to multiple;
+			ammoReserve = value;
+		} else {
+			if has ammo:
+				take ammo;
+			ammoReserve = 0;
+		}
+	}
+	
+	fn void reload()
+	{
+		int xferAmt = clipSize - ammoInClip;
+		if ammoReserve < xferAmt:
+			xferAmt = ammoReserve;
+		
+		ammoInClip += xferAmt;
+		setAmmoReserve(ammoReserve - xferAmt);
+		"You reload "+toTheString()+".";
+	}
+	
+	on look {
+		describe();
+		"It has a gun metal finish and a wooden grip.";
+	}
+	
+	on examine {
+		print("Upon inspection, you see that ");
+		if ammoInClip > 0:
+			"you have " + Bold(ammoInClip.toString()+" bullets") + " in your magazine.";
+		else
+			"your magazine is empty.";
+	}
+	
+	on open:
+		do examine;
+	
+	on use {
+		if tool == ammo {
+			reload();
+		} else if tool != null {
+			if ammoInClip == 0 {
+				gun+" isn't loaded.";
+			} else {
+				if tool.verbs["shoot"] != null {
+					cc("red")+"BANG"+cc("gray");
+					wait(250);
+					
+					if player.location == patrolman1.location && patrolman1 isnt dead {
+						patrolman1: "Woah!";
+						game.wanted = true;
+					}
+					
+					tool do shoot;
+				} else {
+					"You're not sure why you'd shoot "+tool+".";
+				}
+				ammoInClip--;
+			}
+		}
+		else
+		{
+			"On what?";
+		}
+	}
+	
+	on give {
+		if tool == ammo {
+			reload();
+		} else {
+			"Guns usually like to receive "+ammo+".";
+		}
+	}
+	
+	on reload:
+		reload();
+}
+
+item ammo a "7mm bullet" {
+	aka {"ammo", "bullet", "bullets", "7mm ammo"};
+	
+	on examine:
+		"You have "+this+".";
+	
+	on use {
+		if tool == gun:
+			gun.reload();
+		else
+			"Usually, you put "+this+" in "+gun;
+	}
+	
+	state multiple {
+		article = "some";
+		name = "7mm ammo";
+		
+		on examine:
+			"You have " + Bold(gun.ammoReserve+" "+name)+".";
+	}
+}
+
+verb shoot {
+	if !(has gun) {
+		"Do you even have a gun?";
+		return;
+	}
+		
+	Verbable g = gun;
+		
+	if !TryVerb(g, "use", new string[] { "use", "gun", target.name }):
+		"What would that even do?";
+}
+
+verb reload {
+	if !has gun {
+		"Do you even have a gun?";
+		return;
+	}
+	
+	if !has ammo {
+		"Do you even have ammo to put in it?";
+		return;
+	}
+		
+	Verbable am = ammo;
+		
+	if !TryVerb(am, "use", new string[] { "use", "ammo", "gun" }):
+		"What would that even do?";
+}

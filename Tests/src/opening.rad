@@ -1,0 +1,34 @@
+room opening "Intro" {
+	on look {
+		TypeOutLine("Ugh.... Where am I?", 50);
+		wait(500);
+		TypeOutLine("Too lazy to...", 100);
+		
+		player.article = "none";
+		menu {
+			"What's even my name?";
+			player.name = inputLine();
+			"My name is "+player+". Is this correct?";
+		
+			case "No":
+				"'K";
+			case "Yes":
+				break;
+		}
+		menu {
+			player: "And I'm a...";
+			
+			case "Boy":
+				game.male = true;
+				break;
+			case "Girl":
+				game.male = false;
+				break;
+		}
+		player: "Bluh, I "+Colorize("guess", "cyan")+" I should wake up today.";
+		
+		give {wallet, cellphone};
+		wallet give idcard;
+		goto house;
+	}
+}

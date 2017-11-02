@@ -1,0 +1,36 @@
+game NineOFive {
+	"Welcome to 9:05.";
+	give {keys, wallet, watch};
+	give dirty_clothing;
+	wallet give idcard;
+	goto bathroom;
+}
+
+item keys a "pair of keys": aka {"keychain", "keys"};
+item wallet a "leather wallet" {
+	aka "wallet";
+	state closed_wallet {
+		on open {
+			to opened_wallet;
+			"The wallet is now open.";
+			inventoryVisible = true;
+		}
+	}
+	state opened_wallet {
+		on close {
+			to closed_wallet;
+			"The wallet is now closed.";
+			inventoryVisible = false;
+		}
+	}
+	to closed_wallet;
+}
+item idcard an "id card": aka {"card", "id"};
+using System.DateTime;
+item watch a "gold watch" {
+	aka {"watch", "clock"};
+	on examine:
+		"The hands read " + DateTime..Now.ToShortTimeString() + ".";
+}
+item dirty_clothing some "dirty clothing": aka "laundry";
+item clean_clothing some "clean clothing": aka "clothing";

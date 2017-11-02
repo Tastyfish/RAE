@@ -1,0 +1,168 @@
+room gunshop a "gun store" {
+	aka {"store", "shop"};
+	
+	on look {
+		describe();
+		"The room looks really secure.";
+	}
+	
+	fn void shootout() {
+		"A gate comes down from the ceiling and covers "+north.toTheString()+".";
+		game.inputVerb();
+		print(south.toTheString()+": ");
+		TypeOutLine("Ahahahahaha.", 100);
+		south: "You idiot.";
+		south.toTheString()+" gets out "+bold("his shotgun")+".";
+		pause();
+		"The barrel pops through the slot and shoots you.";
+		pause();
+		game.gameOver("You bled to death.");
+	}
+	
+	spot north the "exit" {
+		aka {"door", "doorway"};
+		on enter {
+			south: "Yup.";
+			goto street;
+		}
+		on look {
+			describe();
+			"The outside world is barely visible through the small, tinted windows.";
+		}
+		on examine:
+			"It's a push door.";
+		on open:
+			"The door's already open, as is the store!";
+		on close:
+			"You don't own the store!";
+	}
+	spot west a "gun rack" {
+		aka {"shelf", "rack", "guns"};
+		
+		on look {
+			describe();
+			"The rack holds many different types of guns,";
+			bold("a shotgun")+", "+bold("a pistol")+", and "+bold("a hunting rifle")+".";
+		}
+		on enter:
+			do look;
+		on pickup:
+			"All of the guns are behind bulletproof glass.";
+		on shoot {
+			"The bullet ricochets off the glass.";
+			gunshop.shootout();
+		}
+	}
+	spot south the "cashier" {
+		aka {"clerk"};
+		
+		
+		
+		on look {
+			describe();
+			"He is standing behind a bulletproof glass panel with a small slot at the bottom.";
+			"He's eyeing you.";
+		}
+		on examine:
+			"The cashier looks fairly surley.";
+		on use:
+			do talk;
+		on enter:
+			do talk;
+			
+		fn void dlgGun() {
+			if has gun {
+				this: "Sorry, we're out of stock on all the guns.";
+				return;
+			}
+			
+			this: "Well, we only have "+gun+" in stock.";
+			menu {
+				case "I'd like that gun.":
+					this: "That'll be $50.";
+					if wallet.canPay(50) {
+						menu {
+							case "Here you are.":
+								if wallet.tryPay(50) {
+									give gun;
+									this: "Here, I'll even throw in "+bold("20 bullets")+" for you.";
+									gun.setAmmoReserve(gun.ammoReserve + 20);
+								}
+								break;
+							escape "Never mind.":
+						}
+					} else {
+						player: "I don't have enough money...";
+					}
+					break;
+				escape "Let's talk about something else.":
+					this: "Mhm.";
+			}
+		}
+		
+		fn void dlgAmmo() {
+			if !(has gun) {
+				this: "What kind of ammo do you want?";
+				player: "Oh, I don't have a gun...";
+				return;
+			}
+			
+			this: "We have plenty of "+ammo+" in stock.";
+			menu {
+				case "I'd like some of that.":
+					this: "That'll be $5 for 10 bullets";
+					if wallet.canPay(5) {
+						menu {
+							case "Here you are.":							
+								if wallet.tryPay(5) {
+									this: "Here's "+bold("20 bullets")+".";
+									gun.setAmmoReserve(gun.ammoReserve + 20);
+								}
+								break;
+							escape "Never mind.":
+						}
+					} else {
+						player: "I don't have enough money...";
+					}
+					break;
+				escape "Let's talk about something else.":
+					this: "'K.";
+			}
+		}
+		
+		on talk {
+			this: "Welcome to Jim's Guns & Ammo. What d'ya need?";
+			menu {
+				case "I'd like to buy a gun.":
+					dlgGun();
+				case "I'd like to buy some ammo.":
+					dlgAmmo();
+				case "How do I use a gun again?":
+					this: "You just point the gun, and "
+						+CC("cyan")+"use"+CC("gray")+" "+gun+" on the target.";
+					this: "To reload, you "
+						+CC("cyan")+"use"+CC("gray")+" "+ammo+" on "+gun+".";
+				escape "Goodbye":
+					this: "Yeah, whatever.";
+			}
+		}
+		on shoot {
+			"The bullet ricochets off the glass.";
+			gunshop.shootout();
+		}
+	}
+	spot camera a "security camera" {
+		aka "camera";
+		
+		on look {
+			describe();
+			"The red light is on.";
+		}
+		on examine:
+			"It's watching you.";
+		on shoot {
+			"You miss and hit the wall instead.";
+			gunshop.shootout();
+		}
+	}
+}

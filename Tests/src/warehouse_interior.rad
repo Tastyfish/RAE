@@ -1,0 +1,115 @@
+room warehouse_interior the "inside of the warehouse" {
+	on look {
+		if !DescribedBefore:
+			"Upon first entering, you find that this place is far sketchier than you even first assumed.";
+		describe();
+	}
+	
+	spot lamp a "flickering lamp" {
+		aka {"lamp", "light", "dim light", "dim lamp", "flickering light"};
+		on look {
+			"It's providing the only light in this large room.";
+		}
+	}
+	
+	spot table a "table in the middle of the room" {
+		aka {"table", "guy", "table in the middle"};
+		
+		on look {
+			"There is "+table+" with a guy behind it and some boxes on top.";
+			to seen;
+		}
+		
+		on examine {
+			if isnt seen:
+				do look;
+			"There's also "+sign+".";
+			sign.hidden = false;
+		}
+		
+		fn bool buy(int amt) {
+			guy: "'K, that'll be $"+amt+".";
+			bool canPay = wallet.cash() >= amt;
+			menu {
+				case "[Pay $" + amt + "]" if canPay:
+					wallet.addCash(-amt);
+					this: "Thanks.";
+					return true;
+				case "[Punch him in the face.]" if !canPay:
+					Colorize("He blocks your punch and punches you back.", "yellow");
+					Colorize("You immediately pass out, you fat shit!", "red");
+					goto street;
+					return false;
+				escape "Never mind":
+					return false;
+			}
+		}
+		
+		on talk {
+			menu {
+				guy: "Alright, what'll it be?";
+				
+				case "I'd like to buy a kidney.":
+					if !(has scar) {
+						guy: "You already have 2, what do you need another for?";
+					} else if buy(500) {
+						guy: "As a special deal, I'll even surgically put it in!";
+						Colorize("Something sticks you in the neck!", "red");
+						take scar;
+						goto street;
+						"You feel much better!";
+						return;
+					} else {
+						return;
+					}
+				case "I'd like to buy a bag of chips.":
+					guy: "How many?";
+					int amt = InputInt("# of chip bags> ");
+					if buy(1 * amt) {
+						chips.addAmount(amt);
+					} else {
+						return;
+					}
+				escape "Well, that's that.":
+			}
+		}
+		
+		state seen {
+			name = "table with a guy behind it";
+			
+			on look:
+				"There is "+table+" and some boxes on top.";
+		}
+	}
+	
+	spot sign the "sign on the table" {
+		aka {"sign", "price sign"};
+		hidden = true;
+		
+		on look {
+			"Kidneys - $500";
+			"Chips - $1";
+			"All other items to be determined.";
+		}
+	}
+	
+	spot west the "exit" {
+		aka {"door"};
+		
+		on look:
+			"It's the way out.";
+		
+		on enter {
+			goto warehouse;
+		}
+		
+		on exit:
+			do enter;
+	}
+	
+	on exit:
+		west do enter;
+}
+
+// dummy npc
+item guy the "guy behind the table";

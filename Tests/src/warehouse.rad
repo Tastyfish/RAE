@@ -1,0 +1,174 @@
+room warehouse the "entrance to the shady warehouse" {
+	on enter {
+		if guard is default:
+			guard: "Hey, you'll have to talk to me first if you want to enter.";
+	}
+	
+	spot northwest the "street" {
+		aka {"bushes", "brush", "way out"};
+		on enter: goto street;
+		
+		on look {
+			"This is the way back through the bushes to the street.";
+		}
+	}
+	
+	spot guard the "bouncer" {
+		aka {"guard", "scrub"};
+		
+		state dead {
+			aka {"guard", "scrub", "corpse"};
+			
+			on look {
+				guard+" is a crumpled pile on the ground.";
+				"(You killed him, remember?)";
+			}
+			
+			on examine {
+				if !(has seccard) {
+					"He had "+seccard+" on him.";
+					give seccard;
+				} else {
+					"There is nothing else on him.";
+				}
+			}
+		}
+		
+		on look {
+			"He's a fairly huge bouncer.";
+			"He could most likely "+CC("cyan")+"kick your ass"+CC("gray")+".";
+		}
+		
+		fn void showID() {
+			"You show him "+idcard+".";
+			if game.wanted {
+				guard: "Oh, aren't you that guy the cops are looking for?";
+				player: "Shit.";
+				game.fleeHome();
+			} else {
+				guard: "Alright, this way.";
+				guard to bored;
+				goto warehouse_interior;
+			}
+		}
+		
+		on talk {
+			menu {
+				"What d'ya want?";
+				
+				case "Can you let me in?":
+					guard: "You're not a nark are you?";
+					player: "No, I...";
+					guard: "Show me your ID.";
+					if !(has idcard) && !(wallet has idcard) {
+						player: "Oh, I don't have my ID.";
+						guard: "Hm.";
+					} else {
+						showID();
+						return;
+					}
+				case "Can you do me a favor?":
+					menu {
+						guard: "What now?";
+						case "Look at my gun.":
+							if has gun {
+								guard+" takes "+gun.toTheString();
+								guard give gun;
+								"Yeah, that's swell.";
+								break;
+							} else {
+								"You do a finger gun.";
+								print(guard+": ");
+								TypeOutLine(".....", 100);
+								if guard has gun {
+									player: "Hey, can you give me my gun back?";
+									print(guard+": ");
+									TypeOutLine("Hahahahaha", 100);
+								}
+							}
+						escape "Never mind.":
+							guard: "Some favor...";
+					}
+				escape "Never mind.":
+					guard: "Right, off you go then.";
+			}
+		}
+		
+		on shoot {
+			"You both quickdraw...";
+			pause();
+			if(roll(2) == 0) {
+				"You shoot first.";
+				guard+" drops dead. Holy shit.";
+				guard to dead;
+			} else {
+				"The guard shoots first.";
+				cc("red")+"You are dead!";
+				pause();
+				game.gameOver("Time to meet the afterlife's bouncer.");
+			}
+		}
+		
+		on give {
+			if tool == idcard {
+				showID();
+			} else {
+				this: "I just need to see your ID.";
+			}
+		}
+		
+		state bored {
+			on look {
+				"He's a fairly huge bouncer, although doesn't pay you much mind.";
+				"He could most likely "+CC("cyan")+"kick your ass"+CC("gray")+".";
+			}
+			
+			on talk {
+				menu {
+					"What d'ya want?";
+					
+					case "Can you do me a favor?":
+						menu {
+							guard: "What now?";
+							case "Look at my gun.":
+								if has gun {
+									guard+" takes "+gun.toTheString();
+									guard give gun;
+									"Yeah, that's swell.";
+									break;
+								} else {
+									"You do a finger gun.";
+									print(guard+": ");
+									TypeOutLine(".....", 100);
+									if guard has gun {
+										player: "Hey, can you give me my gun back?";
+										print(guard+": ");
+										TypeOutLine("Hahahahaha", 100);
+									}
+								}
+							escape "Never mind.":
+								guard: "Some favor...";
+						}
+					escape "Never mind.":
+						guard: "Right, off you go then.";
+				}
+			}
+		}
+	}
+	
+	spot east the "entrance to the warehouse" {
+		aka {"warehouse", "entrance", "door"};
+		
+		on enter {
+			if guard is default {
+				guard: "Woah, woah, you'll have to talk to me first.";
+				guard do talk;
+			} else if guard is dead {
+				"You step over "+guard+" and enter.";
+				goto warehouse_interior;
+			} else {
+				goto warehouse_interior;
+			}
+		}
+	}
+}

@@ -1,0 +1,174 @@
+// mostly a dummy room for the cops to live in
+room policeStation the "police station" {
+	// in case something goes weird
+	spot southeast the "exit" {
+		on enter: goto street;
+	}
+}
+
+item copChipPickup a "dropped bag of chips" {
+	aka {"chips", "bag", "bags", "bag of chips"};
+	
+	on examine:
+		"Ruffles!";
+	on pickup {
+		chips.addAmount(1);
+		"You pick up " + ToTheString() + ".";
+		// remove self
+		patrolman1 give this;
+	}
+}
+
+npc patrolman1 a "police officer" {
+	aka {"cop", "copper", "police", "officer"};
+	
+	this goto policeStation;
+	this give copChipPickup;
+	waitTicks = 5;
+	
+	on shoot {
+		this.toTheString()+" slumps down, dead.";
+		to dead;
+	}
+	
+	state dead {
+		name = colorize("dead police officer", "red");
+		on look:
+			"He's a bloody corpse on the ground.";
+		
+		on examine:
+			"He has a badge and gun.";
+		
+		on shoot:
+			"You doubletap." then "He's probably dead.";
+	}
+	
+	state chasing {
+		on look {
+			describe();
+			"He's running torward you."
+				then "He's still running torward you.";
+		}
+		
+		on talk {
+			this: "You're going downtown.";
+			pause();
+			goto policeStation;
+			game.gameOver("Now you can sit around all day in prison.");
+		}
+		
+		tick {
+			if location == player.location {
+				// wow, the player is probably screwed
+				if roll(3) == 0 {
+					this+" "+colorize("grabs you!", "red");
+					int stepsRemaining = 5;
+					menu {
+						"You're currently being grappled by "+this+".";
+						
+						if stepsRemaining == 0 {
+							this: "Gotcha!";
+							pause();
+							goto policeStation;
+							game.gameOver("Now you can sit around all day in prison.");
+							return;
+						}
+						stepsRemaining--;
+						
+						case "[Try to flee home]":
+							if roll(3) == 0 {
+								game.fleeHome();
+								return;
+							} else {
+								"You were unsuccessful.";
+							}
+						case "[Try your luck with your gun.]" if has gun:
+							if roll(3) == 0 {
+								this do shoot;
+							} else {
+								this: colorize("Fuuuu...", "red");
+								pause();
+								take gun;
+								this: "Wow, have fun with another charge!";
+								pause();
+								goto policeStation;
+								game.gameOver("Now you can sit around all day in prison.");
+								return;
+							}
+					}
+				} else {
+					this+" "
+					+ pick(new string[] {"stumbles", "trips", "checks his gun"})
+					+ ", but is getting closer.";
+				}
+			}
+		}
+	}
+	
+	on look {
+		describe();
+		"He's wearing the standard blue uniform and a badge.";
+	}
+	
+	on examine {
+		this: "Do you need something?";
+	}
+	
+	on talk {
+		player: "Hey, officer!";
+		this+" eyes you.";
+		menu {
+			this: "What do you need?";
+			case "Do you really have a gun?":
+				this: "Do you want to find out?";
+			case "Do you want to see my gun?" if has gun:
+				this: "What, no.";
+			escape "Nevermind":
+				"He continues on his route.";
+		}
+	}
+	
+	on give {
+		if tool == gun {
+			this: "As long as you don't conceal it, "+gun.toTheString()+"'s fine.";
+		} else {
+			this: "Why would I want that?";
+		}
+	}
+	
+	tick {
+		// check for player
+		if (location has player) && game.wanted {
+			this: colorize("Hey you there!", "red");
+			to chasing;
+			waitTicks = 1;
+		}
+		
+		// check for gangster
+		if (park has this) && (park has gangster) && (gangster is dead) {
+			toTheString()+" carries off the gangster.";
+			gangster goto policeStation;
+			moveTo(policeStation);
+		}
+		
+		// drop chips?
+		if (this has copChipPickup) && roll(4) == 0 {
+			if location has player:
+				this+" dropped "+copChipPickup;
+			location give copChipPickup;
+		}
+		
+		// patrol
+		room[] choices;
+		switch Location {
+			case street:
+				choices = new room[] {shop, park, gunshop, policeStation};
+			default:
+				choices = new room[] {street};
+		}
+		Room r = pick(choices);
+		moveTo(r);
+		
+		waitTicks = roll(2, 6);
+	}
+}

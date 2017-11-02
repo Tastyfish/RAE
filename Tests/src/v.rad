@@ -1,0 +1,74 @@
+verb enter, go, goto, g:
+	TryEnter(target, line);
+verb look, see, l:
+	TryLook(target, line);
+verb inventory, i, inv:
+	TryInventory(line);
+verb pickup, take, steal, nab, p, get:
+	TryPickup(target, line);
+verb drop, putdown, dump, d:
+	TryDrop(target, line);
+
+verb examine, read, x {
+	if !TryVerb(target, "examine", line) {
+		"Looking closer, you cannot see anything more than you could before.";
+		TryLook(target, line);
+	}
+}
+verb exit, leave {
+	if !TryVerb(target, "exit", line):
+		"You're not sure where you mean by leaving " + target + ".";
+}
+verb open, o {
+	if !TryVerb(target, "open", line):
+		"You're not sure how to open " + target + ".";
+}
+verb close, c {
+	if !TryVerb(target, "close", line):
+		"You're not sure how to close " + target + ".";
+}
+verb use, do, u {
+	if !TryVerb(target, "use", line):
+		"You're not sure what you mean by using " + target + ".";
+}
+verb talk, t {
+	if !TryVerb(target, "talk", line):
+		"You talk to " + target + " for a while, then regain your sanity.";
+}
+verb give, put {
+	// figure out the relationship direction
+	// false for give x y, true for give y to x
+	bool reversed = (fullLine has "to") || (fullLine has "into");
+	
+	Verbable tool;
+	try {
+		tool = TryGetTool(line);
+	} catch Exception {
+		"What "+line[2]+"?";
+		return;
+	}
+	
+	if tool == null {
+		reversed ?
+			"Give "+target+" to what?"
+			: "Give "+target+" what?";
+		return;
+	}
+	
+	if reversed {
+		string[] newl = new string[] { "give", line[2], line[1] };
+		if !TryVerb(tool, "give", newl):
+			"You're not really sure how you'd give something to " + tool + ".";
+	} else {
+		if !TryVerb(target, "give", line):
+			"You're not really sure how you'd give something to " + target + ".";
+	}
+}
+
+verb dbgroom {
+	string r = inputLine("room> ");
+	try
+		player.location = game.rooms[r];
+	catch Exception:
+		"Could not find room.";
+}

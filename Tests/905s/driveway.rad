@@ -1,0 +1,96 @@
+// outside house, access to car
+room driveway the "driveway" {
+	spot cardoor a "1997 Toyota Camery" {
+		aka {"car", "camery", "toyota", "car door"};
+		public bool unlocked = false;
+		on enter {
+			if unlocked {
+				goto car;
+			} else if has keys {
+				"You unlock the car's door and go inside.";
+				unlocked = true;
+				//gesture "open";
+				goto car;
+			} else {
+				"It is locked.";
+			}
+		}
+		on examine {
+			"It's a really shitty car.";
+			"You also spot "+trunk+".";
+			trunk.hidden = false;
+		}
+		on use {
+			if tool == keys:
+				"There's the car's door in the way.";
+		}
+		on open {
+			if !unlocked && (has keys) {
+				"You unlock the car's door.";
+				unlocked = true;
+				//gesture "open";
+			} else {
+				"It is locked.";
+			}
+		}
+	}
+	spot housedoor the "door back inside the house" {
+		aka {"door", "house door", "house"};
+		on enter: goto bathroom;
+	}
+	spot trunk the "car's trunk" {
+		aka {"trunk", "trunk door", "boot"};
+		hidden = true;
+				
+		state opened {
+			name = "car's clearly empty trunk";
+			on close {
+				"You close " + this + ".";
+				to default;
+			}
+		}
+		
+		on open {
+			"You open " + this + ".";
+			to opened;
+		}
+	}
+	spot license the "car's license plate" {
+		aka {"license plate", "plate"};
+		on examine: "The license plate reads EFJ-9324.";
+		on pickup: "It is affixed to the car.";
+	}
+}
+
+// the house owner's car
+room car the "car" {
+	on look {
+		"This is a reasonably comfortable car.";
+		"You must make various decisions now.";
+		"Blah blah blah.";
+		"Where do you want to go?";
+		menu {
+			case "Onto the onramp.":
+				"Unfortunately, the freeway is blocked.";
+				do look;
+				return;
+			case "Continue on.":
+				goto car2;
+				return;
+		}
+	}
+}
+
+room car2 the "car" {
+	on look {
+		if !DescribedBefore {
+			describe();
+			"You suddenly fall asleep. Too bad you didn't check your "
+				+ CC("green") + "insulin" + CC("gray") + "!";
+		} else {
+			"You are unconcious.";
+		}
+	}
+}
+
+room living the "living room";

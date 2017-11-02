@@ -1,0 +1,36 @@
+game NineOFive {
+	public bool playerClean = false;
+}
+
+room bathroom a "bathroom" {
+	give clean_clothing;
+	
+	spot shower a "shower" {
+		on look: "It looks tiley.";
+		on enter: do use;
+		on open: do use;
+		on use {
+			if game.playerClean {
+				"You're already plenty clean!";
+				return;
+			}
+			if (has clean_clothing) || (has dirty_clothing) {
+				"You probably should take off your clothing first.";
+			} else if has watch {
+				"You should probably not ruin your watch.";
+			} else if game.player.contents.count > 0 {
+				"You probably shouldn't ruin your "
+					+ game.player.contents[0].name + ".";
+			} else {
+				"You enter the shower. Feeling cleaner already!";
+				game.playerClean = true;
+			}
+		}
+	}
+	spot door the "doorway outside" {
+		aka {"doorway", "door", "outside", "out"};
+		on enter: goto driveway;
+	}
+	on exit:
+		door do enter;
+}

@@ -1,0 +1,11 @@
+game test {
+	try {
+		"a";
+		throw new Exception("b");
+		"c";
+		throw new Exception("d");
+	} catch Exception e {
+		"Error: " +e;
+	}
+	quit();
+}

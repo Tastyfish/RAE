@@ -1,0 +1,122 @@
+room house your "apartment" {
+	aka {"house", "home", "flat"};
+	this give leaflet;
+	
+	on look {
+		describe();
+		"You've rented this apartment for three years now. It's very messy!";
+	}
+	on examine: "You can't find anything more in this mess.";
+	on exit: east do enter;
+	
+	spot east the "door outside" {
+		aka {"door", "doorway", "outside", "exit"};
+		
+		on exit: do enter;
+		on examine: this+" was left unlocked.";
+		
+		state opened {
+			on enter:
+				goto street;
+			on look {
+				describe(); 
+				"The eggshell paint on it is peeling.";
+				"It is open.";
+			}
+			on open:
+				Bold("The door")+"'s already open.";
+			on close {
+				"You close "+this+".";
+				to closed;
+			}
+		}
+		state closed {
+			on enter:
+				Bold("The door")+"'s closed.";
+			on look {
+				describe(); 
+				"The eggshell paint on it is peeling.";
+				"It is closed.";
+			}
+			on open {
+				"You open "+this+".";
+				to opened;
+			}
+			on close:
+				Bold("The door")+"'s already closed.";
+		}
+		
+		to closed;
+	}
+	spot north a "bed" {
+		aka {"bunk", "cot"};
+		
+		private bool foundCash = false;
+		
+		on use: "You don't feel like sleeping.";
+		on enter: do use;
+		on examine {
+			if !foundCash {
+				"You found $5 under your mattress. Nice!";
+				wallet.addCash(5);
+				foundCash = true;
+			} else {
+				"You don't see anything else.";
+			}
+		}
+	}
+	spot south a "couch facing a tv" {
+		aka {"couch", "seat"};
+		
+		on look {
+			describe();
+			"How ragged! And beige!";
+		}
+		on examine {
+			"You regret looking under the cushions.";
+		}
+		on enter {
+			"You sit a while, watching the TV set.";
+			if has chips {
+				"You happilly eat your "+Bold("bag of chips")+".";
+				for int i = 0; i < 2; i++ {
+					wait(500);
+					"Nom.";
+				}
+				wait(500);
+				"You find "+Bold("a proof of purchase")+" at the bottom!";
+				chips.addAmount(-1);
+				proofs.addAmount(1);
+			} else {
+				"You wish you had " + chips + ".";
+			}
+		}
+		on use: do enter;
+	}
+	spot tv a "15\" TV" {
+		aka {"tv", "tv set", "tele", "television"};
+		
+		on look {
+			describe();
+			"It's an old CRT sporting a bent set of bunny ears.";
+		}
+		on examine {
+			"It is stuck showing channel 5.";
+			"It would be easier to watch sitting down.";
+		}
+		on use:
+			do examine;
+	}
+	spot chipPickup a "bag of chips" {
+		aka {"chips", "bag", "bags"};
+		
+		on examine:
+			"Ruffles!";
+		on pickup {
+			chips.addAmount(1);
+			"You pick up " + ToTheString() + ".";
+			// remove self
+			removed = true;
+		}
+	}
+}

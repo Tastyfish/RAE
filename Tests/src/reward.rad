@@ -1,0 +1,69 @@
+room reward the "limousine" {
+	aka {"limo", "car"};
+
+	on enter {
+		Bold("Tater(R)")+": We'll send a limo right over to pick you up!";
+		"A limo pulls up to you and you hop in.";
+	}
+	on look {
+		describe();
+		"Swanky!";
+	}
+	on examine {
+		"Looks kinda sterile, but at least it's roomy.";
+	}
+	on exit {
+		"Unwise, as "+this+" is currently moving.";
+	}
+	
+	spot light the "overhead lamp" {
+		aka {"lamp", "light", "switch"};
+		
+		on pickup:
+			"It's attached to the wall.";
+		on look {
+			describe();
+			"It's on and pretty bright.";
+		}
+		on examine:
+			"There's a switch to turn it off.";
+		
+		fn void darken() {
+			"Suddenly, "+this+" goes dark. The windows forbid much exterior light from entering.";
+			wait(1000);
+			"You hear a whiff and a crack.";
+			wait(1000);
+			if !(has scar) {
+				proofs.addAmount(-100);
+				give scar;
+				"You feel slightly ill and there is a scar on your chest.";
+				patrolman1 to default;
+				patrolman1.waitTicks = 1;
+				goto house;
+			} else {
+				"Too bad you lost your only remaining kidney.";
+				pause();
+				game.gameOver(" "+CC("green")+"\"YOU WIN\"");
+			}
+		}
+		on open {
+			"You pull the bulb out.";
+			darken();
+		}
+		on use {
+			"You flick "+this+" off.";
+			darken();
+		}
+	}
+}
+
+item scar a "scar on your chest" {
+	aka {"scar", "chest", "wound"};
+	
+	on examine:
+		"It's pretty big.";
+	on open:
+		"That sounds painful.";
+	on drop:
+		"You're not really sure what you mean by that, it being part of you.";
+}

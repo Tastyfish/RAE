@@ -1,0 +1,229 @@
+item wallet your "leather wallet" {
+	aka {"wallet", "coin purse"};
+	
+	private int cash = 0;
+	private item[] whitelist = new item[] {idcard, proofs, seccard, leaflet};
+	InventoryVisible = true;
+	
+	fn int cash() {
+		return (has this) ? cash : 0;
+	}
+	
+	fn void addCash(int delta) {
+		cash += delta;
+		
+		if cash < 0 {
+			cash = 0;
+		}
+	}
+	
+	fn bool canPay(int amt) {
+		return cash() >= amt;
+	}
+	
+	fn bool tryPay(int amt) {
+		if canPay(amt) {
+			addCash(-amt);
+			return true;
+		} else {
+			return false;
+		}
+	}
+	
+	on examine {
+		if cash > 0:
+			"You have $" + cash + ".";
+		else
+			ToTheString() + " is empty.";
+	}
+	
+	fn void putIn(Verbable tool) {
+		try {
+			if whitelist has tool {
+				this give tool;
+				"You put "+tool.toTheString()+" into "+this+".";
+			} else {
+				"That won't fit into "+this+".";
+			}
+		} catch Exception e {
+			"I'm not sure how to put "+tool+" into "+this+".";
+		}
+	}
+	
+	on use {
+		if tool != null {
+			putIn(tool);
+		} else {
+			player: "Money can be exchanged for goods and services!";
+		}
+	}
+	
+	on give {
+		putIn(tool);
+	}
+	
+	state closed {
+		on open {
+			to default;
+			toTheString()+" is now open.";
+			inventoryVisible = true;
+		}
+	}
+	
+	on close {
+		to closed;
+		toTheString()+" is now closed.";
+		inventoryVisible = false;
+	}
+	
+	on drop:
+		player: "That's probably a bad idea...";
+}
+
+verb dbgdosh {
+	try
+		wallet.addCash(inputInt());
+	catch Exception e:
+		"Invalid amount";
+}
+
+item idcard your "id card" {
+	aka {"id", "identification"};
+	
+	on examine {
+		"You are identified as "+player+".";
+		"You are a " + (game.male ? "boy" : "girl")+".";
+		"You are a bit lumpy and overweight.";
+	}
+}
+
+item seccard a "security card" {
+	aka {"card"};
+	
+	on look {
+		"It is "+(warehouse.spots["guard"])+"'s old security card.";
+	}
+	
+	on examine {
+		"It has a picture of "+(warehouse.spots["guard"])+".";
+		"It states that his name was "+Bold(player.name)+".";
+		"What a bizarre coincidence.";
+		"There is a magnetic strip on the back.";
+	}
+}
+
+item chips a "bag of chips" {
+	aka {"chips", "bag", "bags"};
+	
+	private int amount = 0;
+	
+	fn int amount() {
+		return (has this) ? amount : 0;
+	}
+	
+	fn void addAmount(int delta) {
+		amount += delta;
+		
+		if amount <= 0 {
+			take this;
+			amount = 0;
+		} else {
+			give this;
+			
+			if amount == 1 {
+				to default;
+			} else {
+				to multiple;
+			}
+		}
+	}
+	
+	on examine:
+		"You have a bag of Tater(R) Ruffle Chips.";
+	
+	on drop:
+		"You would you put down perfectly good chips?";
+	
+	state multiple {
+		article = "some";
+		name = "bags of chips";
+		
+		on examine:
+			"You have " + amount + " bags of Tater(R) Ruffle Chips.";
+	}
+}
+
+item proofs a "proof of purchase" {
+	aka {"proof", "proofs", "coupon", "coupons", "pop", "pops", "pop coupon", "pop coupons"};
+	
+	on examine:
+		"You have "+this+".";
+	
+	private int amount = 0;
+	
+	fn int amount() {
+		return (has this) ? amount : 0;
+	}
+	
+	fn void addAmount(int delta) {
+		if !(has this) && amount > 0 && delta > 0 {
+			// user dropped them somewhere
+			"The proof slip gets caught by the wind and slips from your hand!";
+			// and then just add it to wherever the pile actually is
+		}
+		
+		int value = amount + delta;
+		
+		if value > 0 {
+			give proofs;
+			
+			if value == 1:
+				to default;
+			else
+				to multiple;
+			amount = value;
+		} else {
+			take proofs;
+			amount = 0;
+		}	
+	}
+	
+	state multiple {
+		article = "some";
+		name = "proofs of purchase";
+		
+		on examine:
+			"There are " + Bold(amount+" "+name)+".";
+	}
+}
+
+item leaflet an "advertisement" {
+	aka {"poster", "ad", "leaflet"};
+	
+	on look {
+		describe();
+		"It's an ad for collecting coupons from chip bags.";
+	}
+	on examine {
+		"Collect 100 proofs of purchases from any Tater(R) chip products";
+		"and win a 50\" big-screen TV and a year's supply of Munchie(R) cookies!";
+		"Just call 1-800-524-233 to claim your prize!";
+		game.hasAdNumber = true;
+	}
+	on use:
+		do examine;
+	on open:
+		"It's a flat sheet; it cannot be opened or closed.";
+	on close:
+		do open;
+	
+	// make picking up normal after first time
+	state taken {
+	}
+	
+	on pickup {
+		"You pick up "+toTheString()+" and put it into "+wallet+".";
+		wallet give this;
+		to taken;
+	}
+}

@@ -1,0 +1,88 @@
+game Doors {
+	goto choices;
+	
+	fn void lose(string msg) {
+		Colorize(msg, "red");
+		Colorize("Game over", "red");
+		pause();
+		newgame();
+	}
+	
+	fn void win(string msg) {
+		Colorize(msg, "green");
+		Colorize("You win!!!", "green");
+		pause();
+		newgame();
+	}
+}
+
+verb enter, go, goto, g, open:
+	TryEnter(target, line);
+verb look, see, l:
+	TryLook(target, line);
+
+room choices the "Choice Area" {
+	fn void setcol(spot s, string ext, list#string colors) {
+		string col = pick(colors);
+		s.name = col + " door " + ext;
+		s.aka give col + " door";
+		colors take col;
+	}
+	
+	on enter {
+		// pick winner
+		switch(roll(3)) {
+			case 0:
+				door1 to winner;
+			case 1:
+				door2 to winner;
+			case 2:
+				door3 to winner;
+		}
+
+		// set names
+		list#string colors = new list#string;
+		colors give {"red", "green", "blue", "magenta", "yellow"};
+		setcol(door1, "on the left", colors);
+		setcol(door2, "in the middle", colors);
+		setcol(door3, "on the right", colors);
+	}
+	
+	spot door1 the "left door" {
+		aka {"left door", "door on the left", "left"};
+		
+		on enter:
+			game.lose("A tiger jumps out and eats you.");
+		
+		state winner {
+			on enter:
+				game.win("You win a brand new '97 honda civic!");
+		}
+	}
+	
+	spot door2 the "middle door" {
+		aka {"middle door", "door in the middle", "middle"};
+		
+		on enter:
+			game.lose("A cardboard donkey stands there, board.");
+		
+		state winner {
+			on enter:
+				game.win("You win a charcoal grill!");
+		}
+	}
+	
+	spot door3 the "right door" {
+		aka {"right door", "door on the right", "right"};
+		
+		on enter {
+			"There is a key on the floor with no note.";
+			game.lose("also a tiger.");
+		}
+		
+		state winner {
+			on enter:
+				game.win("You won a free trip to North Dakota!");
+		}
+	}
+}

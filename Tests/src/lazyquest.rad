@@ -1,0 +1,82 @@
+game LZ {
+	name = "LazyQuest";
+	
+	public bool shopClosed = false; // convenience store closed if robbed
+	public bool wanted = false;		// player is wanted by the police
+	public bool male = true;		// false for female, true for male
+	public bool hasAdNumber = false;// We've obtained the phone number from the chip ad
+	
+	goto mainmenu;
+	
+	// do a game over screen
+	fn void gameOver(string msg) {
+		clear();
+		xy((consoleWidth - 9) / 2, 10);
+		Colorize("Game Over", "red");
+		xy((consoleWidth - msg.Length) / 2, 11);
+		Colorize(msg, "red");
+		string s = "What a loser.";
+		xy((consoleWidth - s.Length) / 2, 13);
+		Colorize(s, "red");
+		xy(0, consoleHeight-2);
+		pause();
+		NewGame();
+	}
+	
+	// generic fn for escaping various situations
+	fn void fleeHome() {
+		"You flee to "+house+" and shut the door.";
+		"You wait 4 hours.";
+		wait(2000);
+		goto house;
+	}
+	
+	// user murdered somebody and it has been reported
+	fn void becomeMurderer() {
+		Colorize("You are a murderer.", "red");
+		wanted = true;
+	}
+}
+
+room mainmenu "main menu" {
+	on look {
+		fullClear();
+		window(0, 0, 0, 3);
+		xy((consoleWidth - 24) / 2, 1);
+		colorize("Welcome to LazyQuest (R)", "green");
+		window();
+		window(15, 3, -30, -5);
+		menu {
+			case "New Game":
+				"It is recommended you play the tutorial first.";
+				menu {
+					case "Start the game already!":
+						window();
+						CursorX = 0;
+						goto opening;
+						return;
+					case "OK, do the tutorial.":
+						window();
+						cursorX = 0;
+						goto tutorial;
+						return;
+				}
+			case "Tutorial":
+				window();
+				cursorX = 0;
+				goto tutorial;
+				return;
+			case "Load Game":
+				try {
+					if game.loadGame():
+						return;	// we loaded, so escape to game
+				} catch Exception e {
+					"Invalid save file:\n\t" + e.Message;
+					pause();
+					quit();
+				}
+			case "Quit":
+				quit();
+		}
+	}
+}
