@@ -16,17 +16,37 @@ namespace GenericTest
                 Console.Write("h");
                 return;
             }
-            catch(Exception e)
+            catch (Exception e)
             {
                 Console.Write("o " + e.ToString());
             }
             Console.Write(".");
         }
 
+        int f()
+        {
+            Console.Write("a");
+            while (true)
+            {
+                try
+                {
+                    Console.Write(".");
+                    return 2;
+                }
+                catch (Exception)
+                {
+                    Console.Write("e");
+                }
+            }
+            Console.Write("b");
+            return 0;
+            Console.Write("c");
+        }
+
         static void Main(string[] args)
         {
             List<int> a = new List<int>();
-            if(a.Count < 5)
+            if (a.Count < 5)
                 a[0] = a[0];
 
 
