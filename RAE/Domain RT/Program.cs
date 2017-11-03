@@ -289,6 +289,46 @@ namespace RAE
             }
         }
 
+        /// <summary>
+        /// Add a minimum implementation of a verb that the engine requires to exist.
+        /// </summary>
+        /// <param name="name">The official verb name eg. look</param>
+        /// <param name="tryfn">The builtin verb implementation eg. TryLook</param>
+        void AddStockVerb(string name, string tryfn)
+        {
+            var pars = new Dictionary<string, LocalInfo>
+            {
+                { "target", new LocalInfo() { Index = 1, Type = typeof(Verbable) } },
+                { "line", new LocalInfo() { Index = 2, Type = typeof(string[]) } },
+                { "fullline", new LocalInfo() { Index = 3, Type = typeof(string[]) } }
+            };
+            
+            FunctionInfo fi = CreateHiddenFunction(pars, typeof(void));
+            // call TryLook, TryEnter, etc which doesn't take fullline but is an instance method
+            fi.IL.Emit(OpCodes.Ldarg_0);
+            fi.IL.Emit(OpCodes.Ldarg_1);
+            fi.IL.Emit(OpCodes.Ldarg_2);
+            fi.IL.Emit(OpCodes.Call, typeof(RAEGame).GetMethod(tryfn, BindingFlags.Public | BindingFlags.Instance));
+            CloseFunction(fi, true);
+
+            PrecacheVerbs.Add(name, fi);
+        }
+
+        /// <summary>
+        /// Add the minimum implementations of the verbs that the engine requires to exist.
+        /// </summary>
+        /// <seealso cref="AddStockVerb(string, string)"/>
+        void AddRequiredVerbs()
+        {
+            // The game engine requires some sort of implementation of these 2 verbs so let's go with the minimal implementation.
+
+            if (!PrecacheVerbs.ContainsKey("look"))
+                AddStockVerb("look", "TryLook");
+
+            if(!PrecacheVerbs.ContainsKey("enter"))
+                AddStockVerb("enter", "TryEnter");
+        }
+
         public void Compile(ParseTree[] tree, string[] fileNames, bool save)
         {
             FunctionInfo verbInitFn = new FunctionInfo(); // HACK: all this dumb byref stuff for verb compiling
@@ -345,6 +385,7 @@ namespace RAE
                         DoError(tree[i].Root, e.Message);
                 }
             }
+            AddRequiredVerbs();
             FinishProgram(verbInitFn);
 
             // add start function, that's just { Game.Instance.ParseLine(); }
