@@ -40,6 +40,7 @@
   <ItemGroup>
     <Compile Include="Core Grammar\Blocks.cs" />
     <Compile Include="Core Grammar\Calls.cs" />
+    <Compile Include="Domain Grammar\Compiler.cs" />
     <Compile Include="Domain Grammar\DomainBlocks.cs" />
     <Compile Include="Domain Grammar\DomainStatements.cs" />
     <Compile Include="Domain Grammar\DomainTerminals.cs" />
