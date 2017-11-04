@@ -109,6 +109,9 @@ namespace RAE.Game.IO
                         } while (num == GetNumFiltered(choices, CurrentInput.ToString()));
                         break;
                     default:
+                        if (char.IsControl(k.KeyChar))
+                            break;
+
                         // fill in a key at pos
                         CurrentInput.Append(k.KeyChar);
                         // get possible choices
