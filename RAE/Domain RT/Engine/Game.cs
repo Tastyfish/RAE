@@ -16,7 +16,7 @@ namespace RAE.Game
         public Dictionary<string, Item> Items { get; private set; }
         public Dictionary<string, NPC> NPCs { get; private set; }
         public Player Player { get; private set; }
-        public Room CurrentRoom { get { return Player != null ? (Room)Player.Location : null; } }
+        public Room CurrentRoom => (Room)Player?.Location;
         public Dictionary<string, GlobalVerb> Verbs { get; private set; }
         public Dictionary<string, string> VerbShortcuts { get; private set; }
         private static Random mRandomizer = new Random();
@@ -1400,15 +1400,14 @@ namespace RAE.Game
                 //    + mLocation + " TO " + value);
 
                 if (mLocation != null)
-                    mLocation.mContents.Remove(this);
+                    mLocation.Contents.Remove(this);
                 mLocation = value;
                 if (mLocation != null)
-                    mLocation.mContents.Add(this);
+                    mLocation.Contents.Add(this);
             }
         }
 
-        List<Verbable> mContents;
-        public List<Verbable> Contents { get { return mContents; } }
+        public List<Verbable> Contents { get; } = new List<Verbable>();
 
         public void Give(IEnumerable<Verbable> items)
         {
@@ -1436,7 +1435,6 @@ namespace RAE.Game
             CurrentState = Default;
             CurrentState.Name = defaultName;
             CurrentState.Article = defaultArticle;
-            mContents = new List<Verbable>();
             SayTypingRate = 25;
         }
 
@@ -1666,13 +1664,7 @@ namespace RAE.Game
         }
 
         static Player mInstance;
-        public static Player Instance
-        {
-            get
-            {
-                return mInstance;
-            }
-        }
+        public static Player Instance => mInstance;
 
         [DefaultValue(true)]
         public bool AutoLookOnMovement { get; set; }

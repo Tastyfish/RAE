@@ -14,8 +14,8 @@ namespace RAE
     partial class Compiler
     {
         Stack<ClassInfo> ClassStack;
-        ClassInfo CurrentClass { get { return ClassStack.Peek(); } }
-        FunctionInfo CurrentFunction { get { return CurrentClass.CurrentFunction; } }
+        ClassInfo CurrentClass => ClassStack.Peek();
+        FunctionInfo CurrentFunction => CurrentClass.CurrentFunction;
         Dictionary<string, Type> QualifiedTypes;
         Dictionary<string, ClassInfo> TopLevelClasses;
         Dictionary<string, FunctionInfo> PrecacheVerbs = new Dictionary<string, FunctionInfo>();
@@ -45,7 +45,7 @@ namespace RAE
         public class ClassInfo
         {
             public TypeBuilder Class;
-            public FunctionInfo CurrentFunction { get { return FunctionStack.Peek(); } }
+            public FunctionInfo CurrentFunction => FunctionStack.Peek();
             public Stack<FunctionInfo> FunctionStack;
             public Dictionary<string, FunctionInfo> Functions;
             public Dictionary<string, GlobalInfo> Globals;
@@ -67,7 +67,7 @@ namespace RAE
             public Dictionary<string, LocalInfo> Locals;
             public List<LocalInfo> AllocedTemps;
             //public Label ReturnLabel;
-            public bool IsStatic { get { return Method.IsStatic; } }
+            public bool IsStatic => Method.IsStatic;
         }
 
         public struct GlobalInfo
@@ -136,7 +136,7 @@ namespace RAE
             Console.WriteLine(SourceName
                 + node.Span.Location.ToString()
                 + ": " + msg);
-            System.Environment.Exit(1);
+            Environment.Exit(1);
         }
 
         [Serializable]

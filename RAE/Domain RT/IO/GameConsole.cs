@@ -574,14 +574,8 @@ namespace RAE.Game.IO
             Clear();
         }
 
-        public static int ConsoleWidth
-        {
-            get { return winStack.Peek().Width; }
-        }
-        public static int ConsoleHeight
-        {
-            get { return winStack.Peek().Height; }
-        }
+        public static int ConsoleWidth => winStack.Peek().Width;
+        public static int ConsoleHeight => winStack.Peek().Height;
 
         public static void Wait(int ms)
         {
