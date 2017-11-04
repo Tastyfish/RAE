@@ -20,6 +20,9 @@ namespace RAE.Game.IO
         {
             var cardinals = Game.CurrentRoom.Spots.Where(kv => !kv.Value.Removed).Select(kv => kv.Key).Intersect(Room.CompassDirections);
 
+            // add shortcuts
+            cardinals = cardinals.Concat(cardinals.Select(c => Room.ShortCompassDirections[Array.IndexOf(Room.CompassDirections, c)]));
+
             return HandleInput(prompt, Game.Verbs.Keys.Concat(Game.VerbShortcuts.Keys).Distinct().Concat(extraVerbs).Concat(cardinals));
         }
 
